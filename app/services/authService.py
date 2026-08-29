@@ -1,8 +1,6 @@
 from app.models.usuario import Usuario
 from werkzeug.security import generate_password_hash, check_password_hash
 
-print("AUTH SERVICE CARREGADO:", __file__)
-
 class AuthService:
 
     def __init__(self, repoUser):

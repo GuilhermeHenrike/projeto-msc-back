@@ -1,12 +1,85 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Music Hub</title>
 </head>
+
 <body>
-    HOME
-    <a href="/">Voltar para o login</a>
+
+<header>
+    <h1>Music Hub</h1>
+    <a href="/">Sair</a>
+</header>
+
+<main>
+
+    <section>
+
+        {% if comunidades %}
+            {% for comunidade in comunidades %}
+                <div>
+                    <h3>{{ comunidade.nome }}</h3>
+
+                    {% if comunidade.descricao %}
+                        <p>{{ comunidade.descricao }}</p>
+                    {% endif %}
+
+                    <a href="/comunidade/{{ comunidade.id }}">
+                        Ver comunidade
+                    </a>
+
+                    <button
+                        type="button"
+                        data-id="{{ comunidade.id }}"
+                        onclick="atualizarComunidade(this.dataset.id)">
+                        Editar
+                    </button>
+
+                    <button
+                        type="button"
+                        data-id="{{ comunidade.id }}"
+                        onclick="apagarComunidade(this.dataset.id)">
+                        Apagar
+                    </button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Você ainda não participa de nenhuma comunidade.</p>
+        {% endif %}
+
+    </section>
+
+    <section>
+        <h2>Criar comunidade</h2>
+
+        <form action="/comunidade" method="POST">
+
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <br><br>
+
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" name="descricao"></textarea>
+
+            <br><br>
+
+            <label for="imagem_url">Imagem:</label>
+            <input type="text" id="imagem_url" name="imagem_url">
+
+            <br><br>
+
+            <button type="submit">Criar comunidade</button>
+
+        </form>
+    </section>
+
+</main>
+
+<script src="{{ url_for('static', filename='comunidade.js') }}"></script>
+
 </body>
 </html>
