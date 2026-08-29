@@ -59,3 +59,26 @@ class AuthRepository:
         cursor.close()
 
         return resultado
+
+
+    def atualizarSenha(self, email, senhaHash):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            UPDATE usuarios
+            SET senha_hash = %s
+            WHERE email = %s
+            """
+
+        cursor.execute(sql, (senhaHash, email))
+
+        conexao.commit()
+
+        linhasAlteradas = cursor.rowcount
+
+        cursor.close()
+        conexao.close()
+
+        return linhasAlteradas > 0
