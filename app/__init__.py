@@ -1,16 +1,35 @@
 from flask import Flask, render_template, session, redirect
+
 from app.controllers.authController import authController
 from app.controllers.comunidadeController import comunidadeController
+from app.controllers.publicacaoController import publicacaoController
+
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
-from app.services.authService import AuthService
-from flask_mail import Mail
-from app.services.comunidadeService import ComunidadeService
+from app.repositories.publicacaoRepository import PublicacaoRepository
 
+from app.services.authService import AuthService
+from app.services.comunidadeService import ComunidadeService
+from app.services.publicacaoService import PublicacaoService
+
+from flask_mail import Mail
+
+import os
+from dotenv import load_dotenv
+import cloudinary
 
 def create_app():
 
     app = Flask(__name__)
+
+    load_dotenv()
+
+    cloudinary.config(
+        cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+        api_key=os.getenv("CLOUDINARY_API_KEY"),
+        api_secret=os.getenv("CLOUDINARY_API_SECRET"),
+        secure=True
+    )
 
     mail = Mail()
 
@@ -28,19 +47,23 @@ def create_app():
 
     repoUser = AuthRepository()
     repoComunidade = ComunidadeRepository()
+    repoPublicacao = PublicacaoRepository()
 
     authService = AuthService(repoUser, mail)
     comunidadeService = ComunidadeService(repoComunidade)
+    publicacaoService = PublicacaoService(repoPublicacao)
+
+    authController(app, authService)
+    comunidadeController(app, comunidadeService)
+    publicacaoController(app, publicacaoService)
 
     @app.route("/")
     def login():
         return render_template("Login.html")
 
-
     @app.route("/registro")
     def registroPage():
         return render_template("Registro.html")
-
 
     @app.route("/home")
     def homePage():
@@ -49,8 +72,15 @@ def create_app():
             return redirect("/")
 
         usuario_id = session["user.id"]
-        comunidades = comunidadeService.listarTodasComunidadesDoUsuario(usuario_id)
-        return render_template("Home.html", comunidades=comunidades)
+
+        comunidades = comunidadeService.listarTodasComunidadesDoUsuario(
+            usuario_id
+        )
+
+        return render_template(
+            "Home.html",
+            comunidades=comunidades
+        )
 
     @app.route("/enviar-codigo")
     def envCod():
@@ -63,12 +93,17 @@ def create_app():
     @app.route("/validar-cod")
     def validarCodePage():
         return render_template("validar-cod.html")
-    
+
     @app.route("/mudar-senha")
     def mudarSenhaPage():
         return render_template("mudar-senha.html")
 
-    authController(app, authService)
-    comunidadeController(app, comunidadeService)
+    @app.route("/criar-publicao")
+    def criarPublicacaoPage():
+
+        if "user.id" not in session:
+            return redirect("/")
+
+        return render_template("publicacao.html")
 
     return app
