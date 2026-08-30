@@ -4,8 +4,6 @@ from flask_mail import Message
 import random
 from flask import redirect, request, session
 
-print("AUTH SERVICE CARREGADO:", __file__)
-
 class AuthService:
 
     def __init__(self, repoUser, mail):

@@ -1,8 +1,11 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, session, redirect
 from app.controllers.authController import authController
+from app.controllers.comunidadeController import comunidadeController
 from app.repositories.authRepository import AuthRepository
+from app.repositories.comunidadeRepository import ComunidadeRepository
 from app.services.authService import AuthService
 from flask_mail import Mail
+from app.services.comunidadeService import ComunidadeService
 
 
 def create_app():
@@ -24,9 +27,10 @@ def create_app():
 
 
     repoUser = AuthRepository()
+    repoComunidade = ComunidadeRepository()
 
     authService = AuthService(repoUser, mail)
-
+    comunidadeService = ComunidadeService(repoComunidade)
 
     @app.route("/")
     def login():
@@ -40,7 +44,13 @@ def create_app():
 
     @app.route("/home")
     def homePage():
-        return render_template("Home.html")
+
+        if "user.id" not in session:
+            return redirect("/")
+
+        usuario_id = session["user.id"]
+        comunidades = comunidadeService.listarTodasComunidadesDoUsuario(usuario_id)
+        return render_template("Home.html", comunidades=comunidades)
 
     @app.route("/enviar-codigo")
     def envCod():
@@ -59,6 +69,6 @@ def create_app():
         return render_template("mudar-senha.html")
 
     authController(app, authService)
-
+    comunidadeController(app, comunidadeService)
 
     return app
