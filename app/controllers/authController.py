@@ -24,3 +24,9 @@ def authController(app, authService):
             return redirect("/home")
 
         return "Nome ou senha incorretos", 401
+
+    @app.route("/logout", methods=["POST"])
+    def logout():
+        session.clear()
+
+        return redirect("/")
