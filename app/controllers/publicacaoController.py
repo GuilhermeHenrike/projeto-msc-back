@@ -20,3 +20,4 @@ def publicacaoController(app, publicacaoService):
         publicacaoService.criarPublicacao(imagem, legenda, usuario_id, comunidade_id)
 
         return redirect("/home")
+

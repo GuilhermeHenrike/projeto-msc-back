@@ -29,3 +29,22 @@ class PublicacaoRepository:
         conexao.close()
 
         return publicacao
+
+    def carregarPublicacoes(self):
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT publicacoes.*, usuarios.nome AS nome_usuario
+            FROM publicacoes
+            JOIN usuarios ON publicacoes.usuario_id = usuarios.id
+            ORDER BY publicacoes.data_criacao DESC;
+            """
+
+        cursor.execute(sql)
+        publicacao = cursor.fetchall()
+
+        cursor.close()
+        conexao.close()
+
+        return publicacao

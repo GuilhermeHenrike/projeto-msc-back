@@ -24,3 +24,7 @@ class PublicacaoService:
         )
 
         return self.repoPublicacao.salvarPublicacao(novaPublicacao)
+
+    def carregarPublicacao(self):
+
+        return self.repoPublicacao.carregarPublicacoes()

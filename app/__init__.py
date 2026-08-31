@@ -76,10 +76,12 @@ def create_app():
         comunidades = comunidadeService.listarTodasComunidadesDoUsuario(
             usuario_id
         )
+        publicacoes = publicacaoService.carregarPublicacao()
 
         return render_template(
             "Home.html",
-            comunidades=comunidades
+            comunidades=comunidades,
+            publicacoes = publicacoes
         )
 
     @app.route("/enviar-codigo")

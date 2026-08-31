@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='publicacao.css') }}">
 </head>
 
 <body>
@@ -78,10 +79,19 @@
     </section>
 
     <h1>fazer publicacao</h1>
-    <a href="/criar-publicao">add algo</a>
+    <a href="/criar-publicao">publicar algo</a>
+
+    <h1>Publicacoes</h1>
+    {%for publicacao in publicacoes%}
+    <div class="conteiner-publicacao">
+        <h3 class="h3-publicacao"> {{ publicacao.nome_usuario }} </h3> <h4 class="h4-publicaco">{{ publicacao.data_criacao }}</h4>
+        <pclass="p-publicacao"> {{ publicacao.legenda }} </p> 
+        <img src="{{ publicacao.imagem_url }}" width="300" class="img-publicacao">
+    </div>
+    {% endfor %}
 
 </main>
-
+<h1></h1>
 <script src="{{ url_for('static', filename='comunidade.js') }}"></script>
 
 </body>
