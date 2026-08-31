@@ -53,6 +53,7 @@
 
     </section>
 
+
     <section>
         <h2>Criar comunidade</h2>
 
@@ -78,21 +79,75 @@
         </form>
     </section>
 
+
     <h1>fazer publicacao</h1>
+
     <a href="/criar-publicao">publicar algo</a>
 
+
     <h1>Publicacoes</h1>
-    {%for publicacao in publicacoes%}
-    <div class="conteiner-publicacao">
-        <h3 class="h3-publicacao"> {{ publicacao.nome_usuario }} </h3> <h4 class="h4-publicaco">{{ publicacao.data_criacao }}</h4>
-        <pclass="p-publicacao"> {{ publicacao.legenda }} </p> 
-        <img src="{{ publicacao.imagem_url }}" width="300" class="img-publicacao">
-    </div>
+
+    {% for publicacao in publicacoes %}
+
+        <div class="conteiner-publicacao">
+
+            <h3 class="h3-publicacao">
+                {{ publicacao.nome_usuario }}
+            </h3>
+
+            <h4 class="h4-publicaco">
+                {{ publicacao.data_criacao }}
+            </h4>
+
+            <button
+                type="button"
+                onclick="apagarPublicacao({{ publicacao.id }})">
+                Apagar
+            </button>
+
+            <p class="p-publicacao">
+                {{ publicacao.legenda }}
+            </p>
+
+            <img
+                src="{{ publicacao.imagem_url }}"
+                width="300"
+                class="img-publicacao">
+
+        </div>
+
     {% endfor %}
 
 </main>
-<h1></h1>
+
+
 <script src="{{ url_for('static', filename='comunidade.js') }}"></script>
+
+<script>
+
+async function apagarPublicacao(id) {
+
+    const confirmar = confirm("Tem certeza que deseja apagar esta publicação?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const resposta = await fetch(`/apagar-publicacao/${id}`, {
+        method: "DELETE"
+    });
+
+    if (resposta.ok) {
+        window.location.href = "/home";
+        return;
+    }
+
+    const mensagem = await resposta.text();
+
+    alert(mensagem);
+}
+
+</script>
 
 </body>
 </html>

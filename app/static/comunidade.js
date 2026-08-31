@@ -33,3 +33,27 @@ async function apagarComunidade(id) {
 
     console.log("Resposta:", await resposta.text());
 }
+
+
+
+async function apagarPublicacao(id) {
+
+    const confirmar = confirm("Tem certeza que deseja apagar esta publicação?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const resposta = await fetch(`/apagar-publicacao/${id}`, {
+        method: "DELETE"
+    });
+
+    if (resposta.ok) {
+        window.location.href = "/home";
+        return;
+    }
+
+    const mensagem = await resposta.text();
+
+    alert(mensagem);
+}

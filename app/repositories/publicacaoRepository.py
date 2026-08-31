@@ -1,5 +1,6 @@
 from database import conectar
 
+
 class PublicacaoRepository:
 
     def salvarPublicacao(self, publicacao):
@@ -30,7 +31,9 @@ class PublicacaoRepository:
 
         return publicacao
 
+
     def carregarPublicacoes(self):
+
         conexao = conectar()
         cursor = conexao.cursor(dictionary=True)
 
@@ -38,13 +41,53 @@ class PublicacaoRepository:
             SELECT publicacoes.*, usuarios.nome AS nome_usuario
             FROM publicacoes
             JOIN usuarios ON publicacoes.usuario_id = usuarios.id
-            ORDER BY publicacoes.data_criacao DESC;
-            """
+            ORDER BY publicacoes.data_criacao DESC
+        """
 
         cursor.execute(sql)
-        publicacao = cursor.fetchall()
+
+        publicacoes = cursor.fetchall()
+
+        cursor.close()
+        conexao.close()
+
+        return publicacoes
+
+
+    def buscarPublicacao(self, publicacao_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT *
+            FROM publicacoes
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (publicacao_id,))
+
+        publicacao = cursor.fetchone()
 
         cursor.close()
         conexao.close()
 
         return publicacao
+
+
+    def apagarPublicacao(self, publicacao_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            DELETE FROM publicacoes
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (publicacao_id,))
+
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
