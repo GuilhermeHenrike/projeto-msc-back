@@ -11,7 +11,7 @@ def publicacaoController(app, publicacaoService):
 
         imagem = request.files.get("imagem")
         legenda = request.form.get("legenda")
-        comunidade_id = request.form.get("comunidade_id")
+        comunidade_id = request.form.get("comunidade")
 
         if not imagem:
             return "selecione uma imagem"
