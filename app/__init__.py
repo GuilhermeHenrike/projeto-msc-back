@@ -12,6 +12,9 @@ from app.services.authService import AuthService
 from app.services.comunidadeService import ComunidadeService
 from app.services.publicacaoService import PublicacaoService
 
+from app.repositories.comentariosRepository import ComentarioRepository
+from app.services.comentarioService import ComentarioService
+from app.controllers.comentarioController import comentarioController
 from flask_mail import Mail
 
 import os
@@ -57,6 +60,17 @@ def create_app():
     comunidadeController(app, comunidadeService)
     publicacaoController(app, publicacaoService)
 
+    comentarioRepository = ComentarioRepository()
+
+    comentarioService = ComentarioService(
+        comentarioRepository
+        )
+
+    comentarioController(
+        app,
+        comentarioService
+        )
+
     @app.route("/")
     def login():
         return render_template("Login.html")
@@ -77,6 +91,9 @@ def create_app():
             usuario_id
         )
         publicacoes = publicacaoService.carregarPublicacao()
+
+        for publicacao in publicacoes:
+            publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
 
         return render_template(
             "Home.html",
