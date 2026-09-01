@@ -6,7 +6,9 @@ from app.repositories.comunidadeRepository import ComunidadeRepository
 from app.services.authService import AuthService
 from flask_mail import Mail
 from app.services.comunidadeService import ComunidadeService
-
+from app.controllers.perfilProfile import perfilController
+from app.repositories.perfilRepository import PerfilRepository
+from app.services.perfilService import PerfilService
 
 def create_app():
 
@@ -28,9 +30,11 @@ def create_app():
 
     repoUser = AuthRepository()
     repoComunidade = ComunidadeRepository()
+    repoPerfil = PerfilRepository()
 
     authService = AuthService(repoUser, mail)
     comunidadeService = ComunidadeService(repoComunidade)
+    perfilService = PerfilService(repoPerfil)
 
     @app.route("/")
     def login():
@@ -70,5 +74,6 @@ def create_app():
 
     authController(app, authService)
     comunidadeController(app, comunidadeService)
+    perfilController(app, perfilService)
 
     return app
