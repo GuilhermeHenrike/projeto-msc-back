@@ -1,6 +1,7 @@
 import cloudinary
 import cloudinary.uploader
 from app.models.publicacao import Publicacao
+from app.services.moderacaoService import moderarConteudo
 
 
 class PublicacaoService:
@@ -10,6 +11,13 @@ class PublicacaoService:
 
 
     def criarPublicacao(self, imagem, legenda, usuario_id, comunidade_id):
+
+        if legenda:
+            permitido = moderarConteudo(legenda)
+
+        if not permitido:
+            return None
+        
 
         resultado = cloudinary.uploader.upload(imagem)
 

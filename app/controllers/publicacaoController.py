@@ -18,12 +18,15 @@ def publicacaoController(app, publicacaoService):
 
         usuario_id = session["user.id"]
 
-        publicacaoService.criarPublicacao(
+        publicacao = publicacaoService.criarPublicacao(
             imagem,
             legenda,
             usuario_id,
             comunidade_id
         )
+
+        if publicacao is None:
+            return "Sua publicação foi bloqueada por conter conteúdo inadequado", 400
 
         return redirect("/home")
 
