@@ -58,6 +58,7 @@ def create_app():
 
     authController(app, authService)
     comunidadeController(app, comunidadeService)
+    perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
 
     comentarioRepository = ComentarioRepository()
@@ -117,9 +118,6 @@ def create_app():
     def mudarSenhaPage():
         return render_template("mudar-senha.html")
 
-    authController(app, authService)
-    comunidadeController(app, comunidadeService)
-    perfilController(app, perfilService)
     @app.route("/criar-publicao")
     def criarPublicacaoPage():
 

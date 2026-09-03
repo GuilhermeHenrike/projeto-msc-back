@@ -2,7 +2,7 @@ from flask import redirect, request, session
 
 def perfilController(app, perfilService):
 
-    @app.route("/perfil", methods=["PUT"])
+    @app.route("/perfil", methods=["POST"])
     def editarPerfil():
 
         if "user.id" not in session:
