@@ -1,0 +1,52 @@
+
+.conteiner-publicacao {
+  
+    border: 1px solid #2d2d3a;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 550px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.conteiner-publicacao:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Cabeçalho do post (Nome do usuário e data) */
+.h3-publicacao {
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin: 0;
+    display: inline-block;
+}
+
+.h4-publicaco {
+    color: #a0a0b0;
+    font-size: 0.85rem;
+    font-weight: 400;
+    margin: 0 0 8px 0;
+}
+
+.p-publicacao {
+    color: #e1e1e6;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin: 4px 0 12px 0;
+    word-break: break-word;
+}
+
+.img-publicacao {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #2d2d3a;
+    margin-top: 8px;
+    display: block;
+}

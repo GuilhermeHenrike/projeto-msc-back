@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+
+    {% if mensagem %}
+        <p>{{ mensagem }}</p>
+    {% endif %}
+
+    <form action="/comentario" method="POST">
+
+    <input 
+        type="hidden" 
+        name="publicacao_id" 
+        value="{{ publicacao_id }}"
+    >
+
+    <textarea 
+        name="texto" 
+        placeholder="Escreva seu comentário..."
+        required
+    ></textarea>
+
+    <button type="submit">
+        Comentar
+    </button>
+
+</form>
+
+{% for comentario in comentarios %}
+
+<div>
+
+    {% if comentario.foto_usuario %}
+        <img 
+            src="{{ comentario.foto_usuario }}"
+            width="50"
+            height="50"
+        >
+    {% endif %}
+
+    <strong>
+        {{ comentario.nome_usuario }}
+    </strong>
+
+    <p>
+        {{ comentario.texto }}
+    </p>
+
+</div>
+
+{% endfor %}
+</body>
+</html>

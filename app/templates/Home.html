@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='publicacao.css') }}">
+</head>
+
+<body>
+
+<header>
+    <h1>Music Hub</h1>
+
+    <form action="/logout" method="POST">
+        <button type="submit">Sair</button>
+    </form>
+        
+
+</header>
+
+<main>
+
+    <section>
+
+        {% if comunidades %}
+            {% for comunidade in comunidades %}
+                <div>
+                    <h3>{{ comunidade.nome }}</h3>
+
+                    {% if comunidade.genero %}
+                        <p>{{ comunidade.genero }}</p>
+                    {% endif %}
+
+                    {% if comunidade.descricao %}
+                        <p>{{ comunidade.descricao }}</p>
+                    {% endif %}
+
+                    <a href="/comunidade/{{ comunidade.id }}">
+                        Ver comunidade
+                    </a>
+
+                    <button
+                        type="button"
+                        data-id="{{ comunidade.id }}"
+                        onclick="atualizarComunidade(this.dataset.id)">
+                        Editar
+                    </button>
+
+                    <button
+                        type="button"
+                        data-id="{{ comunidade.id }}"
+                        onclick="apagarComunidade(this.dataset.id)">
+                        Apagar
+                    </button>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>Você ainda não participa de nenhuma comunidade.</p>
+        {% endif %}
+
+    </section>
+
+
+    <section>
+        <h2>Criar comunidade</h2>
+
+        <form action="/comunidade" method="POST">
+
+            <label for="nome">Nome:</label>
+            <input type="text" id="nome" name="nome" required>
+
+            <br><br>
+
+            <label for="genero">Genero:</label>
+            <input type="text" id="genero" name="genero" required>
+
+            <br><br>
+
+            <label for="descricao">Descrição:</label>
+            <textarea id="descricao" name="descricao"></textarea>
+
+            <br><br>
+
+            <label for="imagem_url">Imagem:</label>
+            <input type="text" id="imagem_url" name="imagem_url">
+
+            <br><br>
+
+            <button type="submit">Criar comunidade</button>
+
+        </form>
+    </section>
+
+
+    <h1>fazer publicacao</h1>
+
+    <a href="/criar-publicao">publicar algo</a>
+
+
+    <h1>Publicacoes</h1>
+
+    {% for publicacao in publicacoes %}
+
+        <div class="conteiner-publicacao">
+
+            <h3 class="h3-publicacao">
+                {{ publicacao.nome_usuario }}
+            </h3>
+
+            <h4 class="h4-publicaco">
+                {{ publicacao.data_criacao }}
+            </h4>
+
+            <button
+                type="button"
+                data-id="{{ publicacao.id }}"
+                onclick="apagarPublicacao(this.dataset.id)">
+                Apagar
+            </button>
+            <a href="/comentarios/{{ publicacao.id }}">
+            <button type="button">Comentar</button>
+            </a>
+
+            <p class="p-publicacao">
+                {{ publicacao.legenda }}
+            </p>
+
+            <img
+                src="{{ publicacao.imagem_url }}"
+                width="300"
+                class="img-publicacao">
+
+        </div>
+
+    {% endfor %}
+
+    <section>
+
+        <h1>PERFIL AHAHAHHAHAHHAHAAH</h1>
+        <form action="/perfil" method="POST">
+            <input type="text" name="nome" placeholder="Novo nome">
+            <input type="text" name="foto_url" placeholder="URL da foto">
+
+            <button type="submit">Salvar</button>
+        </form>
+
+    </section>
+
+</main>
+
+
+<script src="{{ url_for('static', filename='comunidade.js') }}"></script>
+
+<script>
+
+async function apagarPublicacao(id) {
+
+    const confirmar = confirm("Tem certeza que deseja apagar esta publicação?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const resposta = await fetch(`/apagar-publicacao/${id}`, {
+        method: "DELETE"
+    });
+
+    if (resposta.ok) {
+        window.location.href = "/home";
+        return;
+    }
+
+    const mensagem = await resposta.text();
+
+    alert(mensagem);
+}
+
+</script>
+
+</body>
+</html>
