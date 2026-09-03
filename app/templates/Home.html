@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Music Hub</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='publicacao.css') }}">
 </head>
 
 <body>
@@ -61,6 +62,7 @@
 
     </section>
 
+
     <section>
         <h2>Criar comunidade</h2>
 
@@ -91,6 +93,49 @@
         </form>
     </section>
 
+
+    <h1>fazer publicacao</h1>
+
+    <a href="/criar-publicao">publicar algo</a>
+
+
+    <h1>Publicacoes</h1>
+
+    {% for publicacao in publicacoes %}
+
+        <div class="conteiner-publicacao">
+
+            <h3 class="h3-publicacao">
+                {{ publicacao.nome_usuario }}
+            </h3>
+
+            <h4 class="h4-publicaco">
+                {{ publicacao.data_criacao }}
+            </h4>
+
+            <button
+                type="button"
+                data-id="{{ publicacao.id }}"
+                onclick="apagarPublicacao(this.dataset.id)">
+                Apagar
+            </button>
+            <a href="/comentarios/{{ publicacao.id }}">
+            <button type="button">Comentar</button>
+            </a>
+
+            <p class="p-publicacao">
+                {{ publicacao.legenda }}
+            </p>
+
+            <img
+                src="{{ publicacao.imagem_url }}"
+                width="300"
+                class="img-publicacao">
+
+        </div>
+
+    {% endfor %}
+
     <section>
 
         <h1>PERFIL AHAHAHHAHAHHAHAAH</h1>
@@ -105,7 +150,34 @@
 
 </main>
 
+
 <script src="{{ url_for('static', filename='comunidade.js') }}"></script>
+
+<script>
+
+async function apagarPublicacao(id) {
+
+    const confirmar = confirm("Tem certeza que deseja apagar esta publicação?");
+
+    if (!confirmar) {
+        return;
+    }
+
+    const resposta = await fetch(`/apagar-publicacao/${id}`, {
+        method: "DELETE"
+    });
+
+    if (resposta.ok) {
+        window.location.href = "/home";
+        return;
+    }
+
+    const mensagem = await resposta.text();
+
+    alert(mensagem);
+}
+
+</script>
 
 </body>
 </html>
