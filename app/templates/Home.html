@@ -28,6 +28,10 @@
                 <div>
                     <h3>{{ comunidade.nome }}</h3>
 
+                    {% if comunidade.genero %}
+                        <p>{{ comunidade.genero }}</p>
+                    {% endif %}
+
                     {% if comunidade.descricao %}
                         <p>{{ comunidade.descricao }}</p>
                     {% endif %}
@@ -64,6 +68,11 @@
 
             <label for="nome">Nome:</label>
             <input type="text" id="nome" name="nome" required>
+
+            <br><br>
+
+            <label for="genero">Genero:</label>
+            <input type="text" id="genero" name="genero" required>
 
             <br><br>
 

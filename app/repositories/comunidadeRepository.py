@@ -9,11 +9,11 @@ class ComunidadeRepository:
 
         sql = """
             INSERT INTO comunidades
-            (nome, descricao, imagem_url, criador_id)
-            VALUES (%s, %s, %s, %s)
+            (nome, genero, descricao, imagem_url, criador_id)
+            VALUES (%s, %s, %s, %s, %s)
         """
 
-        cursor.execute(sql, (comunidade.nome, comunidade.descricao,
+        cursor.execute(sql, (comunidade.nome, comunidade.genero, comunidade.descricao,
             comunidade.imagem_url, comunidade.criador_id
         ))
 
@@ -47,12 +47,13 @@ class ComunidadeRepository:
         sql = """
             UPDATE comunidades
             SET nome = %s,
+                genero = %s,
                 descricao = %s,
                 imagem_url = %s
             WHERE id = %s
         """
 
-        cursor.execute(sql, (comunidade.nome, comunidade.descricao,
+        cursor.execute(sql, (comunidade.nome, comunidade.genero, comunidade.descricao,
             comunidade.imagem_url, comunidade_id
         ))
 
@@ -143,6 +144,28 @@ class ComunidadeRepository:
 
         print("ID RECEBIDO NO REPOSITORY:", usuario_id)
         print("RESULTADO DO SQL:", comunidades)
+
+        cursor.close()
+        conexao.close()
+
+        return comunidades
+
+
+    ## FILTRO COMUNIDADE POR GENERO
+
+    def comunidadesPorGenero(self, genero):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT *
+            FROM comunidades
+            WHERE genero = %s
+        """
+
+        cursor.execute(sql, (genero,))
+        comunidades = cursor.fetchall()
 
         cursor.close()
         conexao.close()
