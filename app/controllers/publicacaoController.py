@@ -1,4 +1,4 @@
-from flask import redirect, request, session
+from flask import redirect, request, session, render_template
 
 
 def publicacaoController(app, publicacaoService):
@@ -26,7 +26,7 @@ def publicacaoController(app, publicacaoService):
         )
 
         if publicacao is None:
-            return "Sua publicação foi bloqueada por conter conteúdo inadequado", 400
+            return render_template("publicacao_bloqueada.html")
 
         return redirect("/home")
 

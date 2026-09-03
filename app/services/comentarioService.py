@@ -1,4 +1,5 @@
 from app.models.comentario import Comentario
+from app.services.moderacaoService import moderarConteudo
 
 
 class ComentarioService:
@@ -8,6 +9,11 @@ class ComentarioService:
 
 
     def criarComentario(self, texto, usuario_id, publicacao_id):
+
+        permitido = moderarConteudo(texto)
+
+        if not permitido:
+            return None
 
         novoComentario = Comentario(
             usuario_id=usuario_id,
