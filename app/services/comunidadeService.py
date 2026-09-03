@@ -5,14 +5,14 @@ class ComunidadeService:
     def __init__(self, repoComunidade):
         self.repoComunidade = repoComunidade
 
-    def criarComunidade(self, nome, criador_id, descricao, imagem_url):
+    def criarComunidade(self, nome, genero, criador_id, descricao, imagem_url):
 
-        novaComunidade = Comunidade(nome, criador_id, descricao, imagem_url)
+        novaComunidade = Comunidade(nome, genero, criador_id, descricao, imagem_url)
         return self.repoComunidade.salvarComunidade(novaComunidade)
 
-    def atualizarComunidade(self, nome, descricao, imagem_url, comunidade_id):
+    def atualizarComunidade(self, nome, genero, descricao, imagem_url, comunidade_id):
 
-        comunidadeAtualizada = Comunidade(nome, descricao=descricao, imagem_url=imagem_url, id=comunidade_id)
+        comunidadeAtualizada = Comunidade(nome, genero=genero, descricao=descricao, imagem_url=imagem_url, id=comunidade_id)
         return self.repoComunidade.editarComunidade(comunidadeAtualizada, comunidade_id)
 
     def apagarComunidade(self, comunidade_id):
@@ -32,3 +32,9 @@ class ComunidadeService:
     def listarTodasComunidadesDoUsuario(self, usuario_id):
 
         return self.repoComunidade.todasComunidadesPorUsuario(usuario_id)
+
+    ## FILTRO
+
+    def filtroComunidadesPorGenero(self, genero):
+
+        return self.repoComunidade.comunidadesPorGenero(genero)

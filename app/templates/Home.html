@@ -12,7 +12,12 @@
 
 <header>
     <h1>Music Hub</h1>
-    <a href="/">Sair</a>
+
+    <form action="/logout" method="POST">
+        <button type="submit">Sair</button>
+    </form>
+        
+
 </header>
 
 <main>
@@ -23,6 +28,10 @@
             {% for comunidade in comunidades %}
                 <div>
                     <h3>{{ comunidade.nome }}</h3>
+
+                    {% if comunidade.genero %}
+                        <p>{{ comunidade.genero }}</p>
+                    {% endif %}
 
                     {% if comunidade.descricao %}
                         <p>{{ comunidade.descricao }}</p>
@@ -64,6 +73,11 @@
 
             <br><br>
 
+            <label for="genero">Genero:</label>
+            <input type="text" id="genero" name="genero" required>
+
+            <br><br>
+
             <label for="descricao">Descrição:</label>
             <textarea id="descricao" name="descricao"></textarea>
 
@@ -101,9 +115,13 @@
 
             <button
                 type="button"
-                onclick="apagarPublicacao({{ publicacao.id }})">
+                data-id="{{ publicacao.id }}"
+                onclick="apagarPublicacao(this.dataset.id)">
                 Apagar
             </button>
+            <a href="/comentarios/{{ publicacao.id }}">
+            <button type="button">Comentar</button>
+            </a>
 
             <p class="p-publicacao">
                 {{ publicacao.legenda }}
@@ -117,6 +135,18 @@
         </div>
 
     {% endfor %}
+
+    <section>
+
+        <h1>PERFIL AHAHAHHAHAHHAHAAH</h1>
+        <form action="/perfil" method="POST">
+            <input type="text" name="nome" placeholder="Novo nome">
+            <input type="text" name="foto_url" placeholder="URL da foto">
+
+            <button type="submit">Salvar</button>
+        </form>
+
+    </section>
 
 </main>
 

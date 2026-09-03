@@ -25,7 +25,11 @@ def authController(app, authService):
 
         return "Nome ou senha incorretos", 401
 
-    
+    @app.route("/logout", methods=["POST"])
+    def logout():
+        session.clear()
+
+        return redirect("/")   
 
     @app.route("/enviar-codigo", methods = ["POST"])
     def enviarCodigo():

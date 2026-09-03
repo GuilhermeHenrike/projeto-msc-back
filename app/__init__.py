@@ -1,22 +1,23 @@
 from flask import Flask, render_template, session, redirect
-
 from app.controllers.authController import authController
 from app.controllers.comunidadeController import comunidadeController
 from app.controllers.publicacaoController import publicacaoController
-
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
 from app.repositories.publicacaoRepository import PublicacaoRepository
-
 from app.services.authService import AuthService
 from app.services.comunidadeService import ComunidadeService
 from app.services.publicacaoService import PublicacaoService
-
+from app.repositories.comentariosRepository import ComentarioRepository
+from app.services.comentarioService import ComentarioService
+from app.controllers.comentarioController import comentarioController
 from flask_mail import Mail
-
 import os
 from dotenv import load_dotenv
 import cloudinary
+from app.controllers.perfilProfile import perfilController
+from app.repositories.perfilRepository import PerfilRepository
+from app.services.perfilService import PerfilService
 
 def create_app():
 
@@ -48,14 +49,28 @@ def create_app():
     repoUser = AuthRepository()
     repoComunidade = ComunidadeRepository()
     repoPublicacao = PublicacaoRepository()
+    repoPerfil = PerfilRepository()
 
     authService = AuthService(repoUser, mail)
     comunidadeService = ComunidadeService(repoComunidade)
+    perfilService = PerfilService(repoPerfil)
     publicacaoService = PublicacaoService(repoPublicacao)
 
     authController(app, authService)
     comunidadeController(app, comunidadeService)
+    perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
+
+    comentarioRepository = ComentarioRepository()
+
+    comentarioService = ComentarioService(
+        comentarioRepository
+        )
+
+    comentarioController(
+        app,
+        comentarioService
+        )
 
     @app.route("/")
     def login():
@@ -77,6 +92,9 @@ def create_app():
             usuario_id
         )
         publicacoes = publicacaoService.carregarPublicacao()
+
+        for publicacao in publicacoes:
+            publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
 
         return render_template(
             "Home.html",
