@@ -17,6 +17,7 @@
         <button type="submit">Sair</button>
     </form>
         
+    <a href="entrarSairComunidade">Procurar comunidades</a>
 
 </header>
 
@@ -41,19 +42,31 @@
                         Ver comunidade
                     </a>
 
-                    <button
-                        type="button"
-                        data-id="{{ comunidade.id }}"
-                        onclick="atualizarComunidade(this.dataset.id)">
-                        Editar
-                    </button>
+                    {% if session["user.id"] == comunidade.criador_id %}
 
-                    <button
-                        type="button"
-                        data-id="{{ comunidade.id }}"
-                        onclick="apagarComunidade(this.dataset.id)">
-                        Apagar
-                    </button>
+                        <button
+                            type="button"
+                            data-id="{{ comunidade.id }}"
+                            onclick="atualizarComunidade(this.dataset.id)">
+                            Editar
+                        </button>
+
+                        <button 
+                            type="button" 
+                            data-id="{{ comunidade.id }}" 
+                            onclick="apagarComunidade(this.dataset.id)">
+                            Apagar
+                        </button>
+
+                    {% else %}
+
+                        <form action="/sairComunidade/{{ comunidade.id }}" method="POST">
+                            <button type="submit">
+                                Sair
+                            </button>
+                        </form>
+
+                    {% endif %}
                 </div>
             {% endfor %}
         {% else %}

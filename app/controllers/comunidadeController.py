@@ -65,13 +65,15 @@ def comunidadeController(app, comunidadeService):
 
     ## ROTAS DE BUSCA
 
-    @app.route("/buscarTodasComunidades", methods=["GET"])
-    def buscarTodasComunidades():
+    @app.route("/buscarComunidadesDisponiveis", methods=["GET"])
+    def buscarComunidadesDisponiveis():
 
         if "user.id" not in session:
             return redirect("/")
 
-        return comunidadeService.listarTodasComunidades()
+        usuario_id = session["user.id"]
+
+        return comunidadeService.listarComunidadesNaoParticipa(usuario_id)
 
 
     @app.route("/buscarComunidade/<int:comunidade_id>", methods=["GET"])
@@ -106,3 +108,32 @@ def comunidadeController(app, comunidadeService):
             return redirect("/")
 
         return comunidadeService.filtroComunidadesPorGenero(genero)
+
+
+    ## ENTRAR E SAIR DAS COMUNIDADES
+
+
+    @app.route("/entrarComunidade/<int:comunidade_id>", methods=["POST"])
+    def entrarComunidade(comunidade_id):
+
+        if "user.id" not in session:
+            return redirect("/")
+
+        usuario_id = session["user.id"]
+
+        comunidadeService.entrarComunidade(usuario_id, comunidade_id)
+
+        return redirect("/home")
+
+
+    @app.route("/sairComunidade/<int:comunidade_id>", methods=["POST"])
+    def sairComunidade(comunidade_id):
+
+        if "user.id" not in session:
+            return redirect("/")
+
+        usuario_id = session["user.id"]
+
+        comunidadeService.sairComunidade(usuario_id, comunidade_id)
+
+        return redirect("/home")

@@ -87,16 +87,21 @@ class ComunidadeRepository:
     ## BUSCAR COMUNIDADES
 
 
-    def todasComunidades(self):
+    def todasComunidades(self, usuario_id):
 
         conexao = conectar()
         cursor = conexao.cursor(dictionary=True)
 
         sql = """
-            SELECT * FROM comunidades
+            SELECT c.*
+            FROM comunidades c
+            LEFT JOIN membros_comunidade mc
+                ON c.id = mc.comunidade_id
+                AND mc.usuario_id = %s
+            WHERE mc.id IS NULL
         """
 
-        cursor.execute(sql)
+        cursor.execute(sql, (usuario_id,))
         comunidades = cursor.fetchall()
 
         cursor.close()
@@ -142,9 +147,6 @@ class ComunidadeRepository:
         cursor.execute(sql, (usuario_id,))
         comunidades = cursor.fetchall()
 
-        print("ID RECEBIDO NO REPOSITORY:", usuario_id)
-        print("RESULTADO DO SQL:", comunidades)
-
         cursor.close()
         conexao.close()
 
@@ -171,3 +173,42 @@ class ComunidadeRepository:
         conexao.close()
 
         return comunidades
+
+
+    ## ENTRAR E SAIR DA COMUNIDADE
+
+
+    def entrarComunidade(self, usuario_id, comunidade_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            INSERT INTO membros_comunidade
+            (usuario_id, comunidade_id)
+            VALUES (%s, %s)
+        """
+
+        cursor.execute(sql, (usuario_id, comunidade_id))
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()
+
+
+    def sairComunidade(self, usuario_id, comunidade_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            DELETE FROM membros_comunidade
+            WHERE usuario_id = %s
+            AND comunidade_id = %s
+        """
+
+        cursor.execute(sql, (usuario_id, comunidade_id))
+        conexao.commit()
+
+        cursor.close()
+        conexao.close()

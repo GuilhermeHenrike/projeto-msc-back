@@ -126,4 +126,21 @@ def create_app():
 
         return render_template("publicacao.html")
 
+    @app.route("/entrarSairComunidade")
+    def entrarSair():
+
+        if "user.id" not in session:
+            return redirect("/")
+
+        usuario_id = session["user.id"]
+
+        comunidadesDisponiveis = comunidadeService.listarComunidadesNaoParticipa(
+            usuario_id
+        )
+
+        return render_template(
+            "entrarSairComunidade.html",
+            comunidades=comunidadesDisponiveis
+        )
+
     return app
