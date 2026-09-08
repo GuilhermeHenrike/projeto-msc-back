@@ -1,35 +1,44 @@
 from flask import redirect, request, session
+from mysql.connector.errors import IntegrityError
 
 def authController(app, authService):
 
     @app.route("/registro", methods=["POST"])
     def registro():
-        nome = request.form.get("nome")
-        email = request.form.get("email")
-        senha = request.form.get("senha")
+        dados = request.get_json()
+        nome = dados.get("nome")
+        email = dados.get("email")
+        senha = dados.get("senha")
 
-        authService.fazerRegistro(nome, email, senha)
+        try:
+            authService.fazerRegistro(nome, email, senha)
+            return {"message": "Usuário registrado com sucesso"}, 201
+        
+        except IntegrityError:
+            return {"error": "Este email já está cadastrado"}, 409
 
-        return redirect("/")
-
+    
     @app.route("/logar", methods=["POST"])
     def logar():
-        email = request.form.get("email")
-        senha = request.form.get("senha")
+        dados = request.get_json()
+        email = dados.get("email")
+        senha = dados.get("senha")
 
         user = authService.fazerLogin(email, senha)
 
         if user:
             session["user.id"] = user.id
-            return redirect("/home")
+            return {"message": "Login realizado com sucesso"}, 200
 
-        return "Nome ou senha incorretos", 401
+        return {"error": "Email ou senha incorretos"}, 401
+
 
     @app.route("/logout", methods=["POST"])
     def logout():
         session.clear()
 
-        return redirect("/")   
+        return {"message": "Logout realizado com sucesso"}, 200 
+
 
     @app.route("/enviar-codigo", methods = ["POST"])
     def enviarCodigo():

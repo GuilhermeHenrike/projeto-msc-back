@@ -18,10 +18,17 @@ import cloudinary
 from app.controllers.perfilProfile import perfilController
 from app.repositories.perfilRepository import PerfilRepository
 from app.services.perfilService import PerfilService
+from flask_cors import CORS
 
 def create_app():
 
     app = Flask(__name__)
+
+    CORS(
+        app,
+        origins=["http://localhost:5173"],
+        supports_credentials=True
+    )
 
     load_dotenv()
 
