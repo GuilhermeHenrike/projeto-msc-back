@@ -5,18 +5,9 @@ from flask_mail import Mail
 import cloudinary
 
 # Repositories
-from flask_mail import Mail
-import cloudinary
-
-# Repositories
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
 from app.repositories.publicacaoRepository import PublicacaoRepository
-from app.repositories.comentariosRepository import ComentarioRepository
-from app.repositories.curtidaRepository import CurtidaRepository
-from app.repositories.perfilRepository import PerfilRepository
-
-# Services
 from app.repositories.comentariosRepository import ComentarioRepository
 from app.repositories.curtidaRepository import CurtidaRepository
 from app.repositories.perfilRepository import PerfilRepository
@@ -68,15 +59,6 @@ def create_app():
 
     mail.init_app(app)
 
-    
-
-
-    # =========================
-    # REPOSITORIES
-    # =========================
-    
-
-
     # =========================
     # REPOSITORIES
     # =========================
@@ -91,18 +73,10 @@ def create_app():
     # =========================
     # SERVICES
     # =========================
-    comentarioRepository = ComentarioRepository()
-    curtidaRepository = CurtidaRepository()
-
-    # =========================
-    # SERVICES
-    # =========================
 
     authService = AuthService(repoUser, mail)
-
     comunidadeService = ComunidadeService(repoComunidade)
     perfilService = PerfilService(repoPerfil)
-
     publicacaoService = PublicacaoService(repoPublicacao)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
@@ -112,15 +86,10 @@ def create_app():
     # =========================
 
     authController(app, authService)
-
     comunidadeController(app, comunidadeService)
     perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
     comentarioController(app, comentarioService)
-    curtidaController(app, curtidaService)
-
-    comentarioController(app, comentarioService)
-
     curtidaController(app, curtidaService)
 
     @app.route("/")
@@ -146,8 +115,6 @@ def create_app():
 
         for publicacao in publicacoes:
             publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
-
-            publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
 
             publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
 
