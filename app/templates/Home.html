@@ -145,6 +145,10 @@
                 width="300"
                 class="img-publicacao">
 
+                <form action="/curtir/{{ publicacao.id }}" method="POST">
+    <button type="submit">❤️ Curtir</button> {{ publicacao["curtidas"] }}
+</form>
+
         </div>
 
     {% endfor %}

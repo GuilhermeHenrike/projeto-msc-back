@@ -1,24 +1,33 @@
+import os
+from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
-from app.controllers.authController import authController
-from app.controllers.comunidadeController import comunidadeController
-from app.controllers.publicacaoController import publicacaoController
+from flask_mail import Mail
+import cloudinary
+
+# Repositories
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
 from app.repositories.publicacaoRepository import PublicacaoRepository
+from app.repositories.comentariosRepository import ComentarioRepository
+from app.repositories.curtidaRepository import CurtidaRepository
+from app.repositories.perfilRepository import PerfilRepository
+
+# Services
 from app.services.authService import AuthService
 from app.services.comunidadeService import ComunidadeService
 from app.services.publicacaoService import PublicacaoService
-from app.repositories.comentariosRepository import ComentarioRepository
 from app.services.comentarioService import ComentarioService
-from app.controllers.comentarioController import comentarioController
-from flask_mail import Mail
-import os
-from dotenv import load_dotenv
-import cloudinary
-from app.controllers.perfilProfile import perfilController
-from app.repositories.perfilRepository import PerfilRepository
+from app.services.curtidaService import CurtidaService
 from app.services.perfilService import PerfilService
 from flask_cors import CORS
+
+# Controllers
+from app.controllers.authController import authController
+from app.controllers.comunidadeController import comunidadeController
+from app.controllers.publicacaoController import publicacaoController
+from app.controllers.comentarioController import comentarioController
+from app.controllers.curtidaController import curtidaController
+from app.controllers.perfilProfile import perfilController
 
 def create_app():
 
@@ -40,9 +49,7 @@ def create_app():
     )
 
     mail = Mail()
-
     app.config["SECRET_KEY"] = "aaa"
-
     app.config["MAIL_SERVER"] = "smtp.gmail.com"
     app.config["MAIL_PORT"] = 587
     app.config["MAIL_USE_TLS"] = True
@@ -52,32 +59,41 @@ def create_app():
 
     mail.init_app(app)
 
+    
+
+
+    # =========================
+    # REPOSITORIES
+    # =========================
 
     repoUser = AuthRepository()
     repoComunidade = ComunidadeRepository()
     repoPublicacao = PublicacaoRepository()
     repoPerfil = PerfilRepository()
+    comentarioRepository = ComentarioRepository()
+    curtidaRepository = CurtidaRepository()
+
+    # =========================
+    # SERVICES
+    # =========================
 
     authService = AuthService(repoUser, mail)
     comunidadeService = ComunidadeService(repoComunidade)
     perfilService = PerfilService(repoPerfil)
     publicacaoService = PublicacaoService(repoPublicacao)
+    comentarioService = ComentarioService(comentarioRepository)
+    curtidaService = CurtidaService(curtidaRepository)
+
+    # =========================
+    # CONTROLLERS
+    # =========================
 
     authController(app, authService)
     comunidadeController(app, comunidadeService)
     perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
-
-    comentarioRepository = ComentarioRepository()
-
-    comentarioService = ComentarioService(
-        comentarioRepository
-        )
-
-    comentarioController(
-        app,
-        comentarioService
-        )
+    comentarioController(app, comentarioService)
+    curtidaController(app, curtidaService)
 
     @app.route("/")
     def login():
@@ -102,6 +118,8 @@ def create_app():
 
         for publicacao in publicacoes:
             publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
+
+            publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
 
         return render_template(
             "Home.html",
