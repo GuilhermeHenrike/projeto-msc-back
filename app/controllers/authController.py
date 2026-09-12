@@ -15,7 +15,7 @@ def authController(app, authService):
             return {"mensagem": "Usuário registrado com sucesso"}, 201
         
         except IntegrityError:
-            return {"error": "Este email já está cadastrado"}, 409
+            return {"erro": "Este email já está cadastrado"}, 409
 
     
     @app.route("/logar", methods=["POST"])
@@ -30,7 +30,7 @@ def authController(app, authService):
             session["user.id"] = user.id
             return {"mensagem": "Login realizado com sucesso"}, 200
 
-        return {"error": "Email ou senha incorretos"}, 401
+        return {"erro": "Email ou senha incorretos"}, 401
 
 
     @app.route("/logout", methods=["POST"])
