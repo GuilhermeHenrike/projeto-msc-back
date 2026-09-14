@@ -1,4 +1,6 @@
 from flask import request, session
+from mysql.connector.errors import IntegrityError
+import cloudinary.uploader
 
 def comunidadeController(app, comunidadeService):
 
@@ -8,15 +10,24 @@ def comunidadeController(app, comunidadeService):
         if "user.id" not in session:
             return {"erro": "Não autenticado"}, 401
 
-        dados = request.get_json()
-        nome = dados.get("nome")
-        genero = dados.get("genero")
-        descricao = dados.get("descricao")
-        imagem_url = dados.get("imagem_url")
+        nome = request.form.get("nome")
+        genero = request.form.get("genero")
+        descricao = request.form.get("descricao")
+        imagem_frontend = request.files.get("imagem_url") ## pega a imagem do front
+        imagem_url = None ## nulo pq nao sabe se o usuario mandou ou nao imagem
+
+        if imagem_frontend: ## se tiver imagem ele da upload e seta como imagem_url
+            resultado = cloudinary.uploader.upload(imagem_frontend)
+            imagem_url = resultado["secure_url"]
+
         usuario_id = session["user.id"]
 
-        comunidadeService.criarComunidade(nome, genero, usuario_id, descricao, imagem_url)
-        return {"mensagem": "Comunidade criada com sucesso"}, 201
+        try:
+            comunidadeService.criarComunidade(nome, genero, usuario_id, descricao, imagem_url)
+            return {"mensagem": "Comunidade criada com sucesso"}, 201
+    
+        except IntegrityError:
+            return {"erro": "Já existe uma comunidade com esse nome"}, 409
 
 
     @app.route("/comunidade/<int:id>", methods=["PUT"])
@@ -33,11 +44,15 @@ def comunidadeController(app, comunidadeService):
         if session["user.id"] != comunidade["criador_id"]:
             return {"erro": "Não autorizado"}, 403
         
-        dados = request.get_json()
-        nome = dados.get("nome")
-        genero = dados.get("genero")
-        descricao = dados.get("descricao")
-        imagem_url = dados.get("imagem_url")
+        nome = request.form.get("nome")
+        genero = request.form.get("genero")
+        descricao = request.form.get("descricao")
+        imagem_url = request.form.get("imagem_url")
+        nova_imagem = request.files.get("imagem")
+
+        if nova_imagem: ## se ele mandou outra imagem então troca imagem_url pela nova imagem
+            resultado = cloudinary.uploader.upload(nova_imagem)
+            imagem_url = resultado["secure_url"]
 
         comunidadeService.atualizarComunidade(nome, genero, descricao, imagem_url, id)
         return {"mensagem": "Comunidade atualizada com sucesso"}, 200
