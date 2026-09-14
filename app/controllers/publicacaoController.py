@@ -34,15 +34,15 @@ def publicacaoController(app, publicacaoService):
     def apagarPublicacao(id):
 
         if "user.id" not in session:
-            return "Usuário não está logado", 401
+            return "Usuário não está logado"
 
         publicacao = publicacaoService.buscarPublicacao(id)
 
         if publicacao is None:
-            return "Publicação não encontrada", 404
+            return "Publicação não encontrada"
 
         if publicacao["usuario_id"] != session["user.id"]:
-            return "Você não pode apagar essa publicação", 403
+            return "Você não pode apagar essa publicação"
 
         publicacaoService.apagarPublicacao(id)
 
