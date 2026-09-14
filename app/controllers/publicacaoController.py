@@ -16,6 +16,7 @@ def publicacaoController(app, publicacaoService):
 
         if not imagem:
             return "selecione uma imagem"
+        
 
         usuario_id = session["user.id"]
 
@@ -26,7 +27,7 @@ def publicacaoController(app, publicacaoService):
             comunidade_id
         )
 
-        return redirect("/home")
+        return "Publicação enviada"
 
 
     @app.route("/apagar-publicacao/<int:id>", methods=["DELETE"])
