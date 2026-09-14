@@ -1,4 +1,4 @@
-from flask import redirect, request, session
+from flask import redirect, request, session, jsonify
 
 
 def publicacaoController(app, publicacaoService):
@@ -46,3 +46,10 @@ def publicacaoController(app, publicacaoService):
         publicacaoService.apagarPublicacao(id)
 
         return "", 204
+
+    @app.route("/publicacoes", methods=["GET"])
+    def carregarPublicacoes():
+
+        publicacoes = publicacaoService.carregarPublicacao()
+
+        return jsonify(publicacoes), 200
