@@ -43,27 +43,32 @@ def authController(app, authService):
     @app.route("/enviar-codigo", methods = ["POST"])
     def enviarCodigo():
 
-        email = request.form.get("email")
+        dados = request.get_json()
+        email = dados.get("email")
         authService.enviarCodigo(email)
 
-        return redirect("/confirmar-codigo")
+        return "codigo enviado!"
 
     @app.route("/conf-codigo", methods=["POST"])
     def confirmarCodigo():
 
-        codigo_digitado = request.form.get("codigo")
+        dados = request.get_json()
+
+        codigo_digitado = dados.get("codigo")
 
         cod_validado = authService.confirmarCodigo(codigo_digitado)
 
         if cod_validado == True:
-            return redirect("/mudar-senha")
+            return "Código confirmado"
         else:
             return "Código não compatível."
 
     @app.route("/mudar-senha", methods = ["POST"])
     def mudarSenha():
 
-        nova_senha = request.form.get("novasenha")
+        dados = request.get_json()
+
+        nova_senha = dados.get("novasenha")
         email = session.get("email_recuperacao")
 
         if not nova_senha:
@@ -72,7 +77,7 @@ def authController(app, authService):
         sucesso = authService.mudarSenha(nova_senha, email)
 
         if sucesso:
-            return redirect("/")
+            return "senha atualizada com sucesso"
 
         return "nao foi possivel atualizar sua senha"
     

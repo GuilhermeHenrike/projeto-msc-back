@@ -38,7 +38,7 @@ class AuthService:
 
         UsuarioEmail = self.repoUser.procurarEmail(email)
 
-        if not Usuario:
+        if not UsuarioEmail:
             return False
 
         codigoAleatorio = random.randint(100000, 999999)
