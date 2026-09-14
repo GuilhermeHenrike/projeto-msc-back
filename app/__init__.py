@@ -3,7 +3,6 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
 from flask_mail import Mail
 import cloudinary
-
 # Repositories
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository

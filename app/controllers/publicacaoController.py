@@ -9,10 +9,9 @@ def publicacaoController(app, publicacaoService):
         if "user.id" not in session:
             return redirect("/")
 
-        dados = request.get_json()
-        imagem = dados.get("imagem")
-        legenda = dados.get("legenda")
-        comunidade_id = dados.get("comunidade")
+        imagem = request.files.get("imagem")
+        legenda = request.form.get("legenda")
+        comunidade_id = request.form.get("comunidade")
 
         if not imagem:
             return "selecione uma imagem"
