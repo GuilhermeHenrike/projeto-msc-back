@@ -1,5 +1,4 @@
-from flask import redirect, request, session, jsonify
-
+from flask import redirect, request, session, jsonify, render_template
 
 def publicacaoController(app, publicacaoService):
 
@@ -19,14 +18,26 @@ def publicacaoController(app, publicacaoService):
 
         usuario_id = session["user.id"]
 
-        publicacaoService.criarPublicacao(
+        publicacao = publicacaoService.criarPublicacao(
             imagem,
             legenda,
             usuario_id,
             comunidade_id
         )
 
-        return "Publicação enviada"
+        if publicacao == "BLOQUEADO":
+            return jsonify({
+                "error": "A publicação foi bloqueada pela moderação."
+            }), 400
+
+        if publicacao == "ERRO":
+            return jsonify({
+                "error": "Erro ao salvar a publicação."
+            }), 500
+
+        return jsonify({
+            "message": "Publicação criada com sucesso."
+        }), 201
 
 
     @app.route("/apagar-publicacao/<int:id>", methods=["DELETE"])

@@ -6,6 +6,11 @@
     <title>Document</title>
 </head>
 <body>
+
+    {% if mensagem %}
+        <p>{{ mensagem }}</p>
+    {% endif %}
+
     <form action="/comentario" method="POST">
 
     <input 
