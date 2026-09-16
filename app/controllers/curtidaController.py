@@ -13,4 +13,4 @@ def curtidaController(app, curtidaService):
 
         curtidaService.curtir(usuario_id, publicacao_id)
 
-        return redirect("/home")
+        return "publicacao curtida!"

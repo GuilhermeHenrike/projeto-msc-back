@@ -1,4 +1,4 @@
-from flask import redirect, request, session, render_template
+from flask import redirect, request, session, render_template, jsonify
 
 
 def comentarioController(app, comentarioService):
@@ -12,11 +12,7 @@ def comentarioController(app, comentarioService):
 
         comentarios = comentarioService.carregarComentarios(publicacao_id)
 
-        return render_template(
-            "Comentarios.html",
-            comentarios=comentarios,
-            publicacao_id=publicacao_id
-        )
+        return jsonify(comentarios)
 
 
     @app.route("/comentario", methods=["POST"])
@@ -25,8 +21,10 @@ def comentarioController(app, comentarioService):
         if "user.id" not in session:
             return redirect("/")
 
-        texto = request.form.get("texto")
-        publicacao_id = request.form.get("publicacao_id")
+        dados = request.get_json()
+
+        texto = dados.get("texto")
+        publicacao_id = dados.get("publicacao_id")
 
         if not texto:
             return "Digite um comentário"
@@ -36,13 +34,9 @@ def comentarioController(app, comentarioService):
 
         usuario_id = session["user.id"]
 
-        comentarioService.criarComentario(
-            texto,
-            usuario_id,
-            publicacao_id
-        )
+        comentarioService.criarComentario( texto, usuario_id, publicacao_id)
 
-        return redirect(f"/comentarios/{publicacao_id}")
+        return jsonify("Comentário criado")
 
 
     @app.route("/comentario/<int:id>", methods=["PUT"])
@@ -51,20 +45,17 @@ def comentarioController(app, comentarioService):
         if "user.id" not in session:
             return redirect("/")
 
-        texto = request.form.get("texto")
+        dados = request.get_json()
+        texto = dados.get("texto")
 
         if not texto:
             return "Digite um comentário"
 
         usuario_id = session["user.id"]
 
-        comentarioService.editarComentario(
-            id,
-            usuario_id,
-            texto
-        )
+        comentarioService.editarComentario(id, usuario_id, texto)
 
-        return "Comentário editado"
+        return jsonify("Comentário editado")
 
 
     @app.route("/comentario/<int:id>", methods=["DELETE"])
@@ -75,9 +66,5 @@ def comentarioController(app, comentarioService):
 
         usuario_id = session["user.id"]
 
-        comentarioService.apagarComentario(
-            id,
-            usuario_id
-        )
-
-        return "Comentário apagado"
+        comentarioService.apagarComentario(id, usuario_id)
+        return jsonify("Comentário apagado")
