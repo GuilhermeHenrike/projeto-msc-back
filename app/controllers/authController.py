@@ -12,10 +12,10 @@ def authController(app, authService):
 
         try:
             authService.fazerRegistro(nome, email, senha)
-            return {"message": "Usuário registrado com sucesso"}, 201
+            return {"mensagem": "Usuário registrado com sucesso"}, 201
         
         except IntegrityError:
-            return {"error": "Este email já está cadastrado"}, 409
+            return {"erro": "Este email já está cadastrado"}, 409
 
     
     @app.route("/logar", methods=["POST"])
@@ -28,16 +28,16 @@ def authController(app, authService):
 
         if user:
             session["user.id"] = user.id
-            return {"message": "Login realizado com sucesso"}, 200
+            return {"mensagem": "Login realizado com sucesso"}, 200
 
-        return {"error": "Email ou senha incorretos"}, 401
+        return {"erro": "Email ou senha incorretos"}, 401
 
 
     @app.route("/logout", methods=["POST"])
     def logout():
         session.clear()
 
-        return {"message": "Logout realizado com sucesso"}, 200 
+        return {"mensagem": "Logout realizado com sucesso"}, 200 
 
 
     @app.route("/enviar-codigo", methods = ["POST"])
