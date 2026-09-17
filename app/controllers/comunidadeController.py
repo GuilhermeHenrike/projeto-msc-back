@@ -1,4 +1,4 @@
-from flask import redirect, request, session
+from flask import redirect, request, session, jsonify
 
 def comunidadeController(app, comunidadeService):
 
