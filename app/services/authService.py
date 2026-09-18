@@ -86,6 +86,8 @@ class AuthService:
 
         return False
 
+    def buscarPerfil(self, usuario_id):
 
-           
-            
+        usuario = self.repoUser.procurarId(usuario_id)
+
+        return usuario
