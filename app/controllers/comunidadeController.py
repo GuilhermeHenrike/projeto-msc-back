@@ -1,6 +1,7 @@
 from flask import request, session
 from mysql.connector.errors import IntegrityError
 import cloudinary.uploader
+from flask import redirect, request, session, jsonify
 
 def comunidadeController(app, comunidadeService):
 
