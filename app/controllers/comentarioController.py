@@ -34,21 +34,6 @@ def comentarioController(app, comentarioService):
 
         usuario_id = session["user.id"]
 
-        comentario = comentarioService.criarComentario(
-            texto,
-            usuario_id,
-            publicacao_id
-        )
-
-        if comentario is None:
-            return render_template(
-                "Comentarios.html",
-                comentarios=comentarioService.carregarComentarios(publicacao_id),
-                publicacao_id=publicacao_id,
-                mensagem="Comentário bloqueado pela moderação."
-    )
-
-        return redirect(f"/comentarios/{publicacao_id}")
         comentarioService.criarComentario( texto, usuario_id, publicacao_id)
 
         return jsonify("Comentário criado")
