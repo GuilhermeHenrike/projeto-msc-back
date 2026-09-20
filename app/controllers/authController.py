@@ -80,7 +80,29 @@ def authController(app, authService):
             return "senha atualizada com sucesso"
 
         return "nao foi possivel atualizar sua senha"
-    
+
+
+    @app.route("/mudar-senha-perfil", methods=["POST"])
+    def mudarSenhaPerfil():
+
+        dados = request.get_json()
+
+        nova_senha = dados.get("novasenha")
+        usuario_id = session.get("user.id")
+
+        if not nova_senha:
+            return "digite uma nova senha"
+
+        sucesso = authService.mudarSenhaPerfil(
+            nova_senha,
+            usuario_id
+        )
+
+        if sucesso:
+            return "senha atualizada com sucesso"
+
+        return "nao foi possivel atualizar sua senha"
+
 
     @app.route("/confirmar-senha", methods=["POST"])
     def confirmarSenha():

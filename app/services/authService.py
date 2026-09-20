@@ -102,3 +102,12 @@ class AuthService:
             return True
 
         return False 
+
+    def mudarSenhaPerfil(self, nova_senha, usuario_id):
+
+        if not nova_senha or not usuario_id:
+            return False
+        
+        senhaHash = generate_password_hash(nova_senha)
+
+        return self.repoUser.atualizarSenhaPerfil(usuario_id, senhaHash)

@@ -84,6 +84,29 @@ class AuthRepository:
         return linhasAlteradas > 0
 
 
+    def atualizarSenhaPerfil(self, usuario_id, senhaHash):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            UPDATE usuarios
+            SET senha_hash = %s
+            WHERE id = %s
+            """
+
+        cursor.execute(sql, (senhaHash, usuario_id))
+
+        conexao.commit()
+
+        linhasAlteradas = cursor.rowcount
+
+        cursor.close()
+        conexao.close()
+
+        return linhasAlteradas > 0
+
+
     def procurarId(self, usuario_id):
 
         conexao = conectar()
