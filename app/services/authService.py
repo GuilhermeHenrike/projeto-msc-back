@@ -34,6 +34,17 @@ class AuthService:
 
         return None
 
+
+    def confirmarSenhaAtual(self, usuario_id, senha):
+
+        resultado = self.repoUser.procurarId(usuario_id)
+
+        if resultado and check_password_hash(resultado["senha_hash"], senha):
+            return True
+
+        return False
+
+
     def enviarCodigo(self,email):
 
         UsuarioEmail = self.repoUser.procurarEmail(email)
@@ -74,9 +85,15 @@ class AuthService:
         if not nova_senha or not email:
             return False
 
+        print("EMAIL:", email)
+        print("SENHA RECEBIDA:", bool(nova_senha))
+        print("TAMANHO DA SENHA:", len(nova_senha))
+
         senhaHash = generate_password_hash(nova_senha)
 
         nsenha = self.repoUser.atualizarSenha(email, senhaHash)
+
+        print("ATUALIZOU:", nsenha)
         
         if nsenha:
             session.pop("codigo_verificado", None)
@@ -84,8 +101,4 @@ class AuthService:
             session.pop("email_recuperacao", None)
             return True
 
-        return False
-
-
-           
-            
+        return False 

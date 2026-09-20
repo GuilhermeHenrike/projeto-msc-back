@@ -82,3 +82,23 @@ class AuthRepository:
         conexao.close()
 
         return linhasAlteradas > 0
+
+
+    def procurarId(self, usuario_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT id, nome, email, senha_hash, foto_url
+            FROM usuarios
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (usuario_id,))
+        resultado = cursor.fetchone()
+
+        cursor.close()
+        conexao.close()
+
+        return resultado

@@ -82,4 +82,20 @@ def authController(app, authService):
         return "nao foi possivel atualizar sua senha"
     
 
-        
+    @app.route("/confirmar-senha", methods=["POST"])
+    def confirmarSenha():
+
+        if "user.id" not in session:
+            return "Usuário não autenticado", 401
+
+        dados = request.get_json()
+
+        senha = dados.get("senha")
+        usuario_id = session["user.id"]
+
+        resultado = authService.confirmarSenhaAtual(usuario_id, senha)
+
+        if resultado:
+            return "Senha confirmada", 200
+
+        return "Senha incorreta", 401
