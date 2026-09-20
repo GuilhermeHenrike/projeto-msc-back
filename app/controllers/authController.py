@@ -99,3 +99,4 @@ def authController(app, authService):
             return "Senha confirmada", 200
 
         return "Senha incorreta", 401
+    
