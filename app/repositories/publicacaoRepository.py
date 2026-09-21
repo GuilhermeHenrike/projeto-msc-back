@@ -41,14 +41,26 @@ class PublicacaoRepository:
             SELECT
             publicacoes.*,
             usuarios.nome AS nome_usuario,
-            COUNT(curtidas.id) AS total_curtidas
-            FROM publicacoes
-            JOIN usuarios
+            usuarios.foto_url,
+
+            (
+                SELECT COUNT(*)
+                FROM curtidas
+                WHERE curtidas.publicacao_id = publicacoes.id
+            ) AS total_curtidas,
+
+            (
+                SELECT COUNT(*)
+                FROM comentarios
+                WHERE comentarios.publicacao_id = publicacoes.id
+            ) AS total_comentarios
+
+        FROM publicacoes
+
+        JOIN usuarios
             ON publicacoes.usuario_id = usuarios.id
-            LEFT JOIN curtidas
-            ON publicacoes.id = curtidas.publicacao_id
-            GROUP BY publicacoes.id
-            ORDER BY publicacoes.id DESC
+
+        ORDER BY publicacoes.id DESC
         """
 
         cursor.execute(sql)
