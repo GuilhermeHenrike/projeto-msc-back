@@ -109,5 +109,9 @@ class AuthService:
             return False
         
         senhaHash = generate_password_hash(nova_senha)
-
         return self.repoUser.atualizarSenhaPerfil(usuario_id, senhaHash)
+    
+    def buscarPerfil(self, usuario_id):
+
+        usuario = self.repoUser.procurarId(usuario_id)
+        return usuario

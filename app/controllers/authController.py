@@ -122,3 +122,22 @@ def authController(app, authService):
 
         return "Senha incorreta", 401
     
+    @app.route("/perfil", methods=["GET"])
+    def perfil():
+
+        usuario_id = session.get("user.id")
+
+        if not usuario_id:
+            return {"erro": "Usuário não está logado"}, 401
+
+        usuario = authService.buscarPerfil(usuario_id)
+
+        if not usuario:
+            return {"erro": "Usuário não encontrado"}, 404
+
+        return {
+            "id": usuario["id"],
+            "nome": usuario["nome"],
+            "email": usuario["email"],
+            "foto_url": usuario["foto_url"]
+        }, 200
