@@ -2,27 +2,6 @@ from database import conectar
 
 class PerfilRepository:
 
-    def buscarPerfil(self, usuario_id):
-
-        conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
-
-        sql = """
-            SELECT id, nome, foto_url
-            FROM usuarios
-            WHERE id = %s
-        """
-
-        cursor.execute(sql, (usuario_id,))
-
-        usuario = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        return usuario
-    
-
     def editarPerfil(self, user):
 
         conexao = conectar()
