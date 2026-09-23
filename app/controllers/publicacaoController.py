@@ -60,7 +60,12 @@ def publicacaoController(app, publicacaoService):
 
     @app.route("/publicacoes", methods=["GET"])
     def carregarPublicacoes():
-
         publicacoes = publicacaoService.carregarPublicacao()
+        usuario_id = session.get("user.id")
+
+        for publicacao in publicacoes:
+            publicacao["eh_dono"] = (
+                publicacao["usuario_id"] == usuario_id
+            )
 
         return jsonify(publicacoes), 200

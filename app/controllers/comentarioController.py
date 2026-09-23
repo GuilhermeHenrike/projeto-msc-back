@@ -12,6 +12,14 @@ def comentarioController(app, comentarioService):
 
         comentarios = comentarioService.carregarComentarios(publicacao_id)
 
+        usuario_id = session["user.id"]
+
+        for comentario in comentarios:
+
+            comentario["eh_dono"] = (
+                comentario["usuario_id"] == usuario_id
+            )
+
         return jsonify(comentarios)
 
 
