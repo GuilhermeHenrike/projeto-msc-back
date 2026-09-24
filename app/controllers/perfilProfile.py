@@ -16,3 +16,16 @@ def perfilController(app, perfilService):
         perfilService.atualizarPerfil(nome, foto_url, usuario_id)
 
         return redirect("/home")
+
+
+    @app.route("/perfil/<int:usuario_id>", methods=["GET"])
+    def buscarPerfil(usuario_id):
+
+        perfil = perfilService.buscarPerfil(usuario_id)
+
+        if perfil is None:
+            return jsonify({
+                "error": "Usuário não encontrado."
+            }), 404
+
+        return jsonify(perfil), 200
