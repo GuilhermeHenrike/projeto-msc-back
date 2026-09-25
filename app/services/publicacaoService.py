@@ -53,3 +53,6 @@ class PublicacaoService:
 
     def buscarPublicacao(self, publicacao_id):
         return self.repoPublicacao.buscarPublicacao(publicacao_id)
+
+    def carregarPublicacoesPorComunidade(self, comunidade_id):
+        return self.repoPublicacao.carregarPublicacoesPorComunidade(comunidade_id)

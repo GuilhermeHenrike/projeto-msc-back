@@ -69,3 +69,17 @@ def publicacaoController(app, publicacaoService):
             )
 
         return jsonify(publicacoes), 200
+
+    @app.route("/publicacoes/comunidade/<int:comunidade_id>", methods=["GET"])
+    def carregarPublicacoesComunidade(comunidade_id):
+
+        publicacoes = publicacaoService.carregarPublicacoesPorComunidade(comunidade_id)
+
+        usuario_id = session.get("user.id")
+
+        for publicacao in publicacoes:
+            publicacao["eh_dono"] = (
+                publicacao["usuario_id"] == usuario_id
+            )
+
+        return jsonify(publicacoes), 200

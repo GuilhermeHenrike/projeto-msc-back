@@ -110,3 +110,45 @@ class PublicacaoRepository:
 
         cursor.close()
         conexao.close()
+
+    def carregarPublicacoesPorComunidade(self, comunidade_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT
+                publicacoes.*,
+                usuarios.nome AS nome_usuario,
+                usuarios.foto_url,
+
+                (
+                    SELECT COUNT(*)
+                    FROM curtidas
+                    WHERE curtidas.publicacao_id = publicacoes.id
+                ) AS total_curtidas,
+
+                (
+                    SELECT COUNT(*)
+                    FROM comentarios
+                    WHERE comentarios.publicacao_id = publicacoes.id
+                ) AS total_comentarios
+
+            FROM publicacoes
+
+            JOIN usuarios
+                ON publicacoes.usuario_id = usuarios.id
+
+            WHERE publicacoes.comunidade_id = %s
+
+            ORDER BY publicacoes.id DESC
+        """
+
+        cursor.execute(sql, (comunidade_id,))
+
+        publicacoes = cursor.fetchall()
+
+        cursor.close()
+        conexao.close()
+
+        return publicacoes
