@@ -160,3 +160,17 @@ def comunidadeController(app, comunidadeService):
         comunidadeService.sairComunidade(usuario_id, comunidade_id)
 
         return {"mensagem": "Saiu da comunidade com sucesso"}, 200
+
+
+    ## BUSCAR COMUNIDADES PELO NOME
+
+
+    @app.route("/buscarComunidades", methods=["GET"])
+    def buscarComunidades():
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        nome = request.args.get("nome", "")
+
+        return comunidadeService.buscarComunidades(nome)

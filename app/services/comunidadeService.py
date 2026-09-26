@@ -60,3 +60,10 @@ class ComunidadeService:
     def sairComunidade(self, usuario_id, comunidade_id):
 
         return self.repoComunidade.sairComunidade(usuario_id, comunidade_id)
+
+
+    ## BUSCAR COMUNIDADES PELO NOME
+
+    def buscarComunidades(self, nome):
+
+        return self.repoComunidade.buscarComunidadesPorNome(nome)

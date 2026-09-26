@@ -212,3 +212,23 @@ class ComunidadeRepository:
 
         cursor.close()
         conexao.close()
+
+
+    def buscarComunidadesPorNome(self, nome):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT *
+            FROM comunidades
+            WHERE nome LIKE %s
+        """
+
+        cursor.execute(sql, (f"%{nome}%",))
+        comunidades = cursor.fetchall()
+
+        cursor.close()
+        conexao.close()
+
+        return comunidades
