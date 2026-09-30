@@ -7,12 +7,14 @@ class ComunidadeService:
 
 
     def criarComunidade(self, nome, genero, criador_id, descricao, imagem_url):
+        genero = genero.strip().lower()
 
         novaComunidade = Comunidade(nome, genero, criador_id, descricao, imagem_url)
         return self.repoComunidade.salvarComunidade(novaComunidade)
 
 
     def atualizarComunidade(self, nome, genero, descricao, imagem_url, comunidade_id):
+        genero = genero.strip().lower()
 
         comunidadeAtualizada = Comunidade(nome, genero=genero, descricao=descricao, imagem_url=imagem_url, id=comunidade_id)
         return self.repoComunidade.editarComunidade(comunidadeAtualizada, comunidade_id)
@@ -45,7 +47,8 @@ class ComunidadeService:
 
 
     def filtroComunidadesPorGenero(self, genero):
-
+        genero = genero.strip().lower()
+        
         return self.repoComunidade.comunidadesPorGenero(genero)
 
 
