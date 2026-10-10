@@ -48,13 +48,15 @@ def create_app():
     )
 
     mail = Mail()
-    app.config["SECRET_KEY"] = "aaa"
-    app.config["MAIL_SERVER"] = "smtp.gmail.com"
-    app.config["MAIL_PORT"] = 587
-    app.config["MAIL_USE_TLS"] = True
-    app.config["MAIL_USERNAME"] = "nyedsomwander@gmail.com"
-    app.config["MAIL_PASSWORD"] = "kjes ebpr hoxp ertu"
-    app.config["MAIL_DEFAULT_SENDER"] = "nyedsomwander@gmail.com"
+
+    app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+
+    app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+    app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT", "587"))
+    app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS", "True").lower() == "true"
+    app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+    app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+    app.config["MAIL_DEFAULT_SENDER"] = os.getenv("MAIL_DEFAULT_SENDER")
 
     mail.init_app(app)
 
