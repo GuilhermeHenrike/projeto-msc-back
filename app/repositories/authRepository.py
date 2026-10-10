@@ -1,127 +1,126 @@
 from database import conectar
 
+
 class AuthRepository:
 
     def salvarUser(self, user):
-
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            INSERT INTO usuarios(nome, email, senha_hash)
-            VALUES (%s, %s, %s)
-        """
+        try:
+            with conexao.cursor() as cursor:
+                sql = """
+                    INSERT INTO usuarios (nome, email, senha_hash)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                """
 
-        cursor.execute(sql, (user.nome, user.email, user.senha_hash))
-        conexao.commit()
+                cursor.execute(sql, (
+                    user.nome,
+                    user.email,
+                    user.senha_hash
+                ))
 
-        user.id = cursor.lastrowid
+                user.id = cursor.fetchone()["id"]
 
-        conexao.close()
-        cursor.close()
+            conexao.commit()
+            return user
 
-        return user
+        except Exception:
+            conexao.rollback()
+            raise
+
+        finally:
+            conexao.close()
+
 
     def procurarEmail(self, email):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT id, nome, email, senha_hash, foto_url
-            FROM usuarios
-            WHERE email = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, nome, email, senha_hash, foto_url
+                    FROM usuarios
+                    WHERE email = %s
+                """, (email,))
 
-        cursor.execute(sql, (email,))
-        resultado = cursor.fetchone()
-
-        conexao.close()
-        cursor.close()
-
-        return resultado
+                return cursor.fetchone()
+        finally:
+            conexao.close()
 
     def procurarNome(self, nome):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT id, nome, email, senha_hash
-            FROM usuarios
-            WHERE nome = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, nome, email, senha_hash
+                    FROM usuarios
+                    WHERE nome = %s
+                """, (nome,))
 
-        cursor.execute(sql, (nome,))
-        resultado = cursor.fetchone()
-
-        conexao.close()
-        cursor.close()
-
-        return resultado
+                return cursor.fetchone()
+        finally:
+            conexao.close()
 
 
     def atualizarSenha(self, email, senhaHash):
-
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            UPDATE usuarios
-            SET senha_hash = %s
-            WHERE email = %s
-            """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE usuarios
+                    SET senha_hash = %s
+                    WHERE email = %s
+                """, (senhaHash, email))
 
-        cursor.execute(sql, (senhaHash, email))
+                alterou = cursor.rowcount > 0
 
-        conexao.commit()
+            conexao.commit()
+            return alterou
 
-        linhasAlteradas = cursor.rowcount
-
-        cursor.close()
-        conexao.close()
-
-        return linhasAlteradas > 0
+        except Exception:
+            conexao.rollback()
+            raise
+        finally:
+            conexao.close()
 
 
     def atualizarSenhaPerfil(self, usuario_id, senhaHash):
-
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            UPDATE usuarios
-            SET senha_hash = %s
-            WHERE id = %s
-            """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE usuarios
+                    SET senha_hash = %s
+                    WHERE id = %s
+                """, (senhaHash, usuario_id))
 
-        cursor.execute(sql, (senhaHash, usuario_id))
+                alterou = cursor.rowcount > 0
 
-        conexao.commit()
+            conexao.commit()
+            return alterou
 
-        linhasAlteradas = cursor.rowcount
-
-        cursor.close()
-        conexao.close()
-
-        return linhasAlteradas > 0
-
+        except Exception:
+            conexao.rollback()
+            raise
+        finally:
+            conexao.close()
+            
 
     def procurarId(self, usuario_id):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT id, nome, email, senha_hash, foto_url
-            FROM usuarios
-            WHERE id = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT id, nome, email, senha_hash, foto_url
+                    FROM usuarios
+                    WHERE id = %s
+                """, (usuario_id,))
 
-        cursor.execute(sql, (usuario_id,))
-        resultado = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        return resultado
+                return cursor.fetchone()
+        finally:
+            conexao.close()

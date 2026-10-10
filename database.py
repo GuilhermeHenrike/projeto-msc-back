@@ -1,9 +1,12 @@
-import mysql.connector
+import os
+import psycopg
+from psycopg.rows import dict_row
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def conectar():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="senha", ## TUA SENHA
-        database="music_hub"
+    return psycopg.connect(
+        os.getenv("DATABASE_URL"),
+        row_factory=dict_row
     )
