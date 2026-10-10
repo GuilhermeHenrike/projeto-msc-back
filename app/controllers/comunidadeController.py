@@ -98,12 +98,17 @@ def comunidadeController(app, comunidadeService):
         if "user.id" not in session:
             return {"erro": "Não autenticado"}, 401
 
+        usuario_id = session["user.id"]
 
         comunidade = comunidadeService.listarComunidade(comunidade_id)
 
         if comunidade is None:
             return {"erro": "Comunidade não encontrada"}, 404
-        
+
+        participando = comunidadeService.usuarioParticipa(usuario_id, comunidade_id)
+
+        comunidade["participando"] = participando
+
         return comunidade
 
 
@@ -140,10 +145,12 @@ def comunidadeController(app, comunidadeService):
         if "user.id" not in session:
             return {"erro": "Não autenticado"}, 401
 
-
         usuario_id = session["user.id"]
 
-        comunidadeService.entrarComunidade(usuario_id, comunidade_id)
+        entrou = comunidadeService.entrarComunidade(usuario_id, comunidade_id)
+
+        if not entrou:
+            return {"erro": "Você já participa desta comunidade"}, 409
 
         return {"mensagem": "Entrou na comunidade com sucesso"}, 200
 
@@ -157,9 +164,16 @@ def comunidadeController(app, comunidadeService):
 
         usuario_id = session["user.id"]
 
-        comunidadeService.sairComunidade(usuario_id, comunidade_id)
+        saiu = comunidadeService.sairComunidade(usuario_id, comunidade_id)
 
-        return {"mensagem": "Saiu da comunidade com sucesso"}, 200
+        if not saiu:
+            return {
+                "erro": "Você não participa desta comunidade"
+            }, 400
+
+        return {
+            "mensagem": "Saiu da comunidade com sucesso"
+        }, 200
 
 
     ## BUSCAR COMUNIDADES PELO NOME

@@ -208,10 +208,36 @@ class ComunidadeRepository:
         """
 
         cursor.execute(sql, (usuario_id, comunidade_id))
+
+        removido = cursor.rowcount > 0
+
         conexao.commit()
 
         cursor.close()
         conexao.close()
+
+        return removido
+
+
+    def usuarioParticipa(self, usuario_id, comunidade_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT id
+            FROM membros_comunidade
+            WHERE usuario_id = %s
+            AND comunidade_id = %s
+        """
+
+        cursor.execute(sql, (usuario_id, comunidade_id))
+        resultado = cursor.fetchone()
+
+        cursor.close()
+        conexao.close()
+
+        return resultado is not None
 
 
     def buscarComunidadesPorNome(self, nome):

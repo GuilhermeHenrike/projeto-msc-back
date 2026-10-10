@@ -1,4 +1,5 @@
 from app.models.comunidade import Comunidade
+from mysql.connector.errors import IntegrityError
 
 class ComunidadeService:
 
@@ -57,12 +58,24 @@ class ComunidadeService:
 
     def entrarComunidade(self, usuario_id, comunidade_id):
 
-        return self.repoComunidade.entrarComunidade(usuario_id, comunidade_id)
-    
+        if self.repoComunidade.usuarioParticipa(usuario_id, comunidade_id):
+            return False
+
+        try:
+            self.repoComunidade.entrarComunidade(usuario_id, comunidade_id)
+            return True
+
+        except IntegrityError:
+            return False
 
     def sairComunidade(self, usuario_id, comunidade_id):
 
         return self.repoComunidade.sairComunidade(usuario_id, comunidade_id)
+
+
+    def usuarioParticipa(self, usuario_id, comunidade_id):
+
+        return self.repoComunidade.usuarioParticipa(usuario_id, comunidade_id)
 
 
     ## BUSCAR COMUNIDADES PELO NOME
