@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
 from flask_mail import Mail
 import cloudinary
+
 # Repositories
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
@@ -10,6 +11,7 @@ from app.repositories.publicacaoRepository import PublicacaoRepository
 from app.repositories.comentariosRepository import ComentarioRepository
 from app.repositories.curtidaRepository import CurtidaRepository
 from app.repositories.perfilRepository import PerfilRepository
+from app.repositories.senhaRepository import SenhaRepository
 
 # Services
 from app.services.authService import AuthService
@@ -18,6 +20,8 @@ from app.services.publicacaoService import PublicacaoService
 from app.services.comentarioService import ComentarioService
 from app.services.curtidaService import CurtidaService
 from app.services.perfilService import PerfilService
+from app.services.senhaService import SenhaService
+
 from flask_cors import CORS
 
 # Controllers
@@ -26,7 +30,8 @@ from app.controllers.comunidadeController import comunidadeController
 from app.controllers.publicacaoController import publicacaoController
 from app.controllers.comentarioController import comentarioController
 from app.controllers.curtidaController import curtidaController
-from app.controllers.perfilProfile import perfilController
+from app.controllers.perfilController import perfilController
+from app.controllers.senhaController import senhaController
 
 def create_app():
 
@@ -62,23 +67,25 @@ def create_app():
     # REPOSITORIES
     # =========================
 
-    repoUser = AuthRepository()
+    repoAuth = AuthRepository()
     repoComunidade = ComunidadeRepository()
     repoPublicacao = PublicacaoRepository()
     repoPerfil = PerfilRepository()
     comentarioRepository = ComentarioRepository()
     curtidaRepository = CurtidaRepository()
+    repoSenha = SenhaRepository()
 
     # =========================
     # SERVICES
     # =========================
 
-    authService = AuthService(repoUser, mail)
+    authService = AuthService(repoAuth)
     comunidadeService = ComunidadeService(repoComunidade)
     perfilService = PerfilService(repoPerfil)
     publicacaoService = PublicacaoService(repoPublicacao)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
+    senhaService = SenhaService(repoSenha, repoAuth, mail)
 
     # =========================
     # CONTROLLERS
@@ -90,6 +97,7 @@ def create_app():
     publicacaoController(app, publicacaoService)
     comentarioController(app, comentarioService)
     curtidaController(app, curtidaService)
+    senhaController(app, senhaService)
 
     @app.route("/")
     def login():

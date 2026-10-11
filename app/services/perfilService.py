@@ -10,7 +10,8 @@ class PerfilService:
         usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url)
         return self.repoPerfil.editarPerfil(usuarioAtualizado)
 
-    def buscarPerfil(self, usuario_id):
+
+    def buscarPerfilComDados(self, usuario_id):
 
         usuario = self.repoPerfil.buscarUsuario(usuario_id)
 
@@ -23,3 +24,9 @@ class PerfilService:
             "usuario": usuario,
             "publicacoes": publicacoes
         }
+
+
+    def buscarPerfil(self, usuario_id):
+
+        usuario = self.repoPerfil.buscarUsuario(usuario_id)
+        return usuario

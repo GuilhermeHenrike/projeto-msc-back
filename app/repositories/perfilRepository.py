@@ -29,9 +29,7 @@ class PerfilRepository:
 
         sql = """
             SELECT
-                id,
-                nome,
-                foto_url
+                id, nome, email, foto_url
             FROM usuarios
             WHERE id = %s
         """
