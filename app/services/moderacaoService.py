@@ -1,62 +1,65 @@
+
 import os
-import time
-from google import genai
+import base64
+
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+api_key = os.getenv("OPENAI_API_KEY")
 
-def moderarConteudo(texto):
+client = OpenAI(
+    api_key=api_key,
+    timeout=15.0,
+    max_retries=0
+) if api_key else None
 
-    prompt = f"""
-Você é um sistema de moderação de conteúdo de uma rede social musical.
 
-Analise o texto abaixo e determine se ele contém conteúdo inadequado.
+def moderarConteudo(legenda, imagem_bytes, mime_type):
+    if client is None:
+        raise RuntimeError("OPENAI_API_KEY não configurada.")
 
-Considere inadequado:
+    tipos_validos = {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    }
 
-- ameaças
-- incentivo à violência
-- discurso de ódio
-- assédio grave
-- conteúdo sexual explícito
-- incentivo a atividades criminosas
-- conteúdo extremamente ofensivo
+    if not imagem_bytes:
+        raise ValueError("A imagem enviada está vazia.")
 
-Responda SOMENTE com uma destas duas palavras:
+    if mime_type not in tipos_validos:
+        raise ValueError("Formato de imagem não suportado.")
 
-APROVADO
+    if len(imagem_bytes) > 10 * 1024 * 1024:
+        raise ValueError("A imagem ultrapassa o limite de 10 MB.")
 
-ou
+    imagem_base64 = base64.b64encode(
+        imagem_bytes
+    ).decode("utf-8")
 
-BLOQUEADO
+    imagem_url = f"data:{mime_type};base64,{imagem_base64}"
 
-Texto para analisar:
+    resposta = client.moderations.create(
+        model="omni-moderation-latest",
+        input=[
+            {
+                "type": "text",
+                "text": legenda or ""
+            },
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": imagem_url
+                }
+            }
+        ]
+    )
 
-{texto}
-"""
+    resultado = resposta.results[0]
 
-    for tentativa in range(3):
+    print("Resultado da moderação:", resultado.flagged)
+    print("Categorias identificadas:", resultado.categories)
 
-        try:
-
-            resposta = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=prompt
-            )
-
-            resultado = resposta.text.strip().upper()
-
-            return resultado == "APROVADO"
-
-        except Exception as e:
-
-            print(f"Gemini - tentativa {tentativa + 1}: {e}")
-
-            if tentativa < 2:
-                time.sleep(3)
-            else:
-                return None
+    return not resultado.flagged
