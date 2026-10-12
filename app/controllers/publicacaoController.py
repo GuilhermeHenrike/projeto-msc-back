@@ -1,4 +1,6 @@
-from flask import redirect, request, session, jsonify, render_template
+
+from flask import request, session, jsonify
+
 
 def publicacaoController(app, publicacaoService):
 
@@ -6,15 +8,23 @@ def publicacaoController(app, publicacaoService):
     def criarPublicacao():
 
         if "user.id" not in session:
-            return redirect("/")
+            return jsonify({
+                "error": "Você precisa estar logado."
+            }), 401
 
         imagem = request.files.get("imagem")
-        legenda = request.form.get("legenda")
+        legenda = request.form.get("legenda", "").strip()
         comunidade_id = request.form.get("comunidade")
 
-        if not imagem:
-            return "selecione uma imagem"
-        
+        if imagem is None or not imagem.filename:
+            return jsonify({
+                "error": "Selecione uma imagem."
+            }), 400
+
+        if not comunidade_id:
+            return jsonify({
+                "error": "Selecione uma comunidade."
+            }), 400
 
         usuario_id = session["user.id"]
 
@@ -27,8 +37,27 @@ def publicacaoController(app, publicacaoService):
 
         if publicacao == "BLOQUEADO":
             return jsonify({
-                "error": "A publicação foi bloqueada pela moderação."
+                "error": (
+                    "A imagem ou legenda contém "
+                    "conteúdo não permitido."
+                )
+            }), 422
+
+        if publicacao == "DADOS_INVALIDOS":
+            return jsonify({
+                "error": (
+                    "A imagem está vazia, é inválida "
+                    "ou seu formato não é suportado."
+                )
             }), 400
+
+        if publicacao == "ERRO_MODERACAO":
+            return jsonify({
+                "error": (
+                    "Não foi possível verificar o conteúdo "
+                    "agora. Tente novamente."
+                )
+            }), 503
 
         if publicacao == "ERRO":
             return jsonify({
@@ -39,20 +68,28 @@ def publicacaoController(app, publicacaoService):
             "message": "Publicação criada com sucesso."
         }), 201
 
-
-    @app.route("/apagar-publicacao/<int:id>", methods=["DELETE"])
+    @app.route(
+        "/apagar-publicacao/<int:id>",
+        methods=["DELETE"]
+    )
     def apagarPublicacao(id):
 
         if "user.id" not in session:
-            return "Usuário não está logado"
+            return jsonify({
+                "error": "Usuário não está logado."
+            }), 401
 
         publicacao = publicacaoService.buscarPublicacao(id)
 
         if publicacao is None:
-            return "Publicação não encontrada"
+            return jsonify({
+                "error": "Publicação não encontrada."
+            }), 404
 
         if publicacao["usuario_id"] != session["user.id"]:
-            return "Você não pode apagar essa publicação"
+            return jsonify({
+                "error": "Você não pode apagar essa publicação."
+            }), 403
 
         publicacaoService.apagarPublicacao(id)
 
@@ -60,6 +97,7 @@ def publicacaoController(app, publicacaoService):
 
     @app.route("/publicacoes", methods=["GET"])
     def carregarPublicacoes():
+
         publicacoes = publicacaoService.carregarPublicacao()
         usuario_id = session.get("user.id")
 
@@ -70,10 +108,17 @@ def publicacaoController(app, publicacaoService):
 
         return jsonify(publicacoes), 200
 
-    @app.route("/publicacoes/comunidade/<int:comunidade_id>", methods=["GET"])
+    @app.route(
+        "/publicacoes/comunidade/<int:comunidade_id>",
+        methods=["GET"]
+    )
     def carregarPublicacoesComunidade(comunidade_id):
 
-        publicacoes = publicacaoService.carregarPublicacoesPorComunidade(comunidade_id)
+        publicacoes = (
+            publicacaoService.carregarPublicacoesPorComunidade(
+                comunidade_id
+            )
+        )
 
         usuario_id = session.get("user.id")
 
