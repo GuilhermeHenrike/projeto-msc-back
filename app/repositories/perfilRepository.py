@@ -9,11 +9,13 @@ class PerfilRepository:
 
         sql = """
             UPDATE usuarios
-            SET nome = %s, foto_url = %s
+            SET nome = %s,
+            foto_url = %s,
+            foto_url_background = %s
             WHERE id = %s
         """
 
-        cursor.execute(sql, (user.nome, user.foto_url, user.id))
+        cursor.execute(sql, (user.nome, user.foto_url, user.foto_url_background, user.id))
 
         conexao.commit()
 
@@ -29,7 +31,7 @@ class PerfilRepository:
 
         sql = """
             SELECT
-                id, nome, email, foto_url
+                id, nome, email, foto_url, foto_url_background
             FROM usuarios
             WHERE id = %s
         """

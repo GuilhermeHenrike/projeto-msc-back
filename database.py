@@ -4,6 +4,6 @@ def conectar():
     return mysql.connector.connect(
         host="localhost",
         user="root",
-        password="senha", ## TUA SENHA
+        password="ny2005ny", ## TUA SENHA
         database="music_hub"
     )
