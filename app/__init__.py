@@ -1,3 +1,4 @@
+
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
@@ -21,6 +22,7 @@ from app.services.comentarioService import ComentarioService
 from app.services.curtidaService import CurtidaService
 from app.services.perfilService import PerfilService
 from app.services.senhaService import SenhaService
+from app.services.artistasService import ArtistasService
 
 from flask_cors import CORS
 
@@ -32,6 +34,8 @@ from app.controllers.comentarioController import comentarioController
 from app.controllers.curtidaController import curtidaController
 from app.controllers.perfilController import perfilController
 from app.controllers.senhaController import senhaController
+from app.controllers.artistasController import artistasController
+
 
 def create_app():
 
@@ -99,6 +103,13 @@ def create_app():
     curtidaController(app, curtidaService)
     senhaController(app, senhaService)
 
+    # =========================
+    # ARTISTAS EM ALTA
+    # =========================
+
+    artistasService = ArtistasService()
+    artistasController(app, artistasService)
+
     @app.route("/")
     def login():
         return render_template("Login.html")
@@ -121,14 +132,18 @@ def create_app():
         publicacoes = publicacaoService.carregarPublicacao()
 
         for publicacao in publicacoes:
-            publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
+            publicacao["comentarios"] = comentarioService.carregarComentarios(
+                publicacao["id"]
+            )
 
-            publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
+            publicacao["curtidas"] = curtidaService.contarCurtidas(
+                publicacao["id"]
+            )
 
         return render_template(
             "Home.html",
             comunidades=comunidades,
-            publicacoes = publicacoes
+            publicacoes=publicacoes
         )
 
     @app.route("/enviar-codigo")
@@ -163,8 +178,8 @@ def create_app():
 
         usuario_id = session["user.id"]
 
-        comunidadesDisponiveis = comunidadeService.listarComunidadesNaoParticipa(
-            usuario_id
+        comunidadesDisponiveis = (
+            comunidadeService.listarComunidadesNaoParticipa(usuario_id)
         )
 
         return render_template(
