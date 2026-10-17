@@ -12,6 +12,9 @@ from app.repositories.comentariosRepository import ComentarioRepository
 from app.repositories.curtidaRepository import CurtidaRepository
 from app.repositories.perfilRepository import PerfilRepository
 from app.repositories.senhaRepository import SenhaRepository
+from app.repositories.albumRepository import AlbumRepository
+from app.repositories.albumSalvoRepository import AlbumSalvoRepository
+from app.repositories.avaliacaoRepository import AvaliacaoRepository
 
 # Services
 from app.services.authService import AuthService
@@ -21,6 +24,8 @@ from app.services.comentarioService import ComentarioService
 from app.services.curtidaService import CurtidaService
 from app.services.perfilService import PerfilService
 from app.services.senhaService import SenhaService
+from app.services.albumService import AlbumService
+from app.services.avaliacaoService import AvaliacaoService
 
 from flask_cors import CORS
 
@@ -32,6 +37,8 @@ from app.controllers.comentarioController import comentarioController
 from app.controllers.curtidaController import curtidaController
 from app.controllers.perfilController import perfilController
 from app.controllers.senhaController import senhaController
+from app.controllers.albumController import albumController
+from app.controllers.avaliacaoController import avaliacaoController
 
 def create_app():
 
@@ -74,6 +81,9 @@ def create_app():
     comentarioRepository = ComentarioRepository()
     curtidaRepository = CurtidaRepository()
     repoSenha = SenhaRepository()
+    repoAlbum = AlbumRepository()
+    repoAlbumSalvo = AlbumSalvoRepository()
+    repoAvaliacao = AvaliacaoRepository()
 
     # =========================
     # SERVICES
@@ -81,11 +91,13 @@ def create_app():
 
     authService = AuthService(repoAuth)
     comunidadeService = ComunidadeService(repoComunidade)
-    perfilService = PerfilService(repoPerfil)
     publicacaoService = PublicacaoService(repoPublicacao)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
     senhaService = SenhaService(repoSenha, repoAuth, mail)
+    albumService = AlbumService(repoAlbum, repoAlbumSalvo)
+    avaliacaoService = AvaliacaoService(repoAvaliacao)
+    perfilService = PerfilService(repoPerfil, avaliacaoService)
 
     # =========================
     # CONTROLLERS
@@ -98,6 +110,8 @@ def create_app():
     comentarioController(app, comentarioService)
     curtidaController(app, curtidaService)
     senhaController(app, senhaService)
+    albumController(app, albumService)
+    avaliacaoController(app, avaliacaoService)
 
     @app.route("/")
     def login():

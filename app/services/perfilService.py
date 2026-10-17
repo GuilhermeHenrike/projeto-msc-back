@@ -1,9 +1,11 @@
 from app.models.usuario import Usuario
 
+
 class PerfilService:
 
-    def __init__(self, repoPerfil):
+    def __init__(self, repoPerfil, avaliacaoService):
         self.repoPerfil = repoPerfil
+        self.avaliacaoService = avaliacaoService
 
     def atualizarPerfil(self, nome, imagem_url, usuario_id):
 
@@ -19,14 +21,11 @@ class PerfilService:
             return None
 
         publicacoes = self.repoPerfil.buscarPublicacoesUsuario(usuario_id)
+        avaliacoes = self.avaliacaoService.carregarAvaliacoesUsuario(usuario_id)
 
-        return {
-            "usuario": usuario,
-            "publicacoes": publicacoes
-        }
-
+        return {"usuario": usuario, "publicacoes": publicacoes, "avaliacoes": avaliacoes}
+    
 
     def buscarPerfil(self, usuario_id):
-
         usuario = self.repoPerfil.buscarUsuario(usuario_id)
         return usuario
