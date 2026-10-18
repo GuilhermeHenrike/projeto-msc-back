@@ -70,3 +70,5 @@ def perfilController(app, perfilService):
             "foto_url": usuario["foto_url"],
             "foto_url_background": usuario["foto_url_background"]
         }, 200
+
+

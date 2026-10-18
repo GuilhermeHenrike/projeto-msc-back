@@ -1,5 +1,7 @@
+
 import cloudinary
 import cloudinary.uploader
+
 from app.models.publicacao import Publicacao
 from app.services.moderacaoService import moderarConteudo
 from app.services.moderacaoImagemService import moderarImagem
@@ -18,18 +20,14 @@ class PublicacaoService:
             if permitido is False:
                 return "BLOQUEADO"
 
-
         imagem_permitida = moderarImagem(imagem)
 
         if imagem_permitida is False:
             return "BLOQUEADO"
 
-
         try:
             imagem.seek(0)
-
             resultado = cloudinary.uploader.upload(imagem)
-
             imagem_url = resultado["secure_url"]
 
         except Exception as e:
@@ -55,4 +53,9 @@ class PublicacaoService:
         return self.repoPublicacao.buscarPublicacao(publicacao_id)
 
     def carregarPublicacoesPorComunidade(self, comunidade_id):
-        return self.repoPublicacao.carregarPublicacoesPorComunidade(comunidade_id)
+        return self.repoPublicacao.carregarPublicacoesPorComunidade(
+            comunidade_id
+        )
+
+    def listarFeedSeguindo(self, usuario_id):
+        return self.repoPublicacao.listarFeedSeguindo(usuario_id)

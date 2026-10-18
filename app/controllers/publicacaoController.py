@@ -83,3 +83,26 @@ def publicacaoController(app, publicacaoService):
             )
 
         return jsonify(publicacoes), 200
+
+
+    @app.route("/publicacoes/seguindo", methods=["GET"])
+    def publicacoesSeguindo():
+
+        usuario_id = session.get("user.id")
+
+        if not usuario_id:
+            return jsonify({
+                "erro": "Usuário não autenticado"
+            }), 401
+
+        try:
+            publicacoes = publicacaoService.listarFeedSeguindo(usuario_id)
+
+            return jsonify(publicacoes), 200
+
+        except Exception as erro:
+            print(f"Erro ao buscar publicações das comunidades seguidas: {erro}")
+
+            return jsonify({
+                "erro": "Não foi possível carregar as publicações das comunidades seguidas."
+            }), 500
