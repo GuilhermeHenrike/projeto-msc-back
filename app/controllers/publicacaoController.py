@@ -2,27 +2,41 @@ from flask import redirect, request, session, jsonify, render_template
 
 def publicacaoController(app, publicacaoService):
 
+    
     @app.route("/publicacao", methods=["POST"])
     def criarPublicacao():
 
         if "user.id" not in session:
-            return redirect("/")
+            return jsonify({"error": "Usuário não autenticado."}), 401
 
-        imagem = request.files.get("imagem")
+        arquivo = request.files.get("imagem")
         legenda = request.form.get("legenda")
         comunidade_id = request.form.get("comunidade")
 
-        if not imagem:
-            return "selecione uma imagem"
-        
+        if not arquivo or not arquivo.filename:
+            return jsonify({
+                "error": "Selecione uma imagem ou um vídeo."
+            }), 400
+
+        tipo_mime = arquivo.mimetype or ""
+
+        if tipo_mime.startswith("image/"):
+            tipo_midia = "imagem"
+        elif tipo_mime.startswith("video/"):
+            tipo_midia = "video"
+        else:
+            return jsonify({
+                "error": "Formato de arquivo não permitido."
+            }), 400
 
         usuario_id = session["user.id"]
 
         publicacao = publicacaoService.criarPublicacao(
-            imagem,
+            arquivo,
             legenda,
             usuario_id,
-            comunidade_id
+            comunidade_id,
+            tipo_midia
         )
 
         if publicacao == "BLOQUEADO":

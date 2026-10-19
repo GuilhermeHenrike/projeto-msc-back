@@ -53,30 +53,34 @@ class PerfilRepository:
 
         sql = """
             SELECT
-                publicacoes.*,
-                usuarios.nome AS nome_usuario,
-                usuarios.foto_url,
+            publicacoes.*,
+            usuarios.nome AS nome_usuario,
+            usuarios.foto_url,
+            comunidades.nome AS nome_comunidade,
 
-                (
-                    SELECT COUNT(*)
-                    FROM curtidas
-                    WHERE curtidas.publicacao_id = publicacoes.id
-                ) AS total_curtidas,
+            (
+                SELECT COUNT(*)
+                FROM curtidas
+                WHERE curtidas.publicacao_id = publicacoes.id
+            ) AS total_curtidas,
 
-                (
-                    SELECT COUNT(*)
-                    FROM comentarios
-                    WHERE comentarios.publicacao_id = publicacoes.id
-                ) AS total_comentarios
+            (
+                SELECT COUNT(*)
+                FROM comentarios
+                WHERE comentarios.publicacao_id = publicacoes.id
+            ) AS total_comentarios
 
-            FROM publicacoes
+        FROM publicacoes
 
-            JOIN usuarios
-                ON publicacoes.usuario_id = usuarios.id
+        JOIN usuarios
+            ON publicacoes.usuario_id = usuarios.id
 
-            WHERE publicacoes.usuario_id = %s
+        JOIN comunidades
+            ON publicacoes.comunidade_id = comunidades.id
 
-            ORDER BY publicacoes.id DESC
+        WHERE publicacoes.usuario_id = %s
+
+        ORDER BY publicacoes.id DESC
         """
 
         cursor.execute(sql, (usuario_id,))
