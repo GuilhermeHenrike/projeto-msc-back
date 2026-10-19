@@ -15,6 +15,7 @@ from app.repositories.senhaRepository import SenhaRepository
 from app.repositories.albumRepository import AlbumRepository
 from app.repositories.albumSalvoRepository import AlbumSalvoRepository
 from app.repositories.avaliacaoRepository import AvaliacaoRepository
+from app.repositories.composicaoRepository import ComposicaoRepository
 
 # Services
 from app.services.authService import AuthService
@@ -26,6 +27,7 @@ from app.services.perfilService import PerfilService
 from app.services.senhaService import SenhaService
 from app.services.albumService import AlbumService
 from app.services.avaliacaoService import AvaliacaoService
+from app.services.composicaoService import ComposicaoService
 
 from flask_cors import CORS
 
@@ -39,6 +41,7 @@ from app.controllers.perfilController import perfilController
 from app.controllers.senhaController import senhaController
 from app.controllers.albumController import albumController
 from app.controllers.avaliacaoController import avaliacaoController
+from app.controllers.composicaoController import composicaoController
 
 def create_app():
 
@@ -84,6 +87,7 @@ def create_app():
     repoAlbum = AlbumRepository()
     repoAlbumSalvo = AlbumSalvoRepository()
     repoAvaliacao = AvaliacaoRepository()
+    repoComposicao = ComposicaoRepository()
 
     # =========================
     # SERVICES
@@ -98,6 +102,7 @@ def create_app():
     albumService = AlbumService(repoAlbum, repoAlbumSalvo)
     avaliacaoService = AvaliacaoService(repoAvaliacao)
     perfilService = PerfilService(repoPerfil, avaliacaoService)
+    composicaoService = ComposicaoService(repoComposicao)
 
     # =========================
     # CONTROLLERS
@@ -112,6 +117,7 @@ def create_app():
     senhaController(app, senhaService)
     albumController(app, albumService)
     avaliacaoController(app, avaliacaoService)
+    composicaoController(app, composicaoService)
 
     @app.route("/")
     def login():
