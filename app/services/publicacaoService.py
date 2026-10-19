@@ -1,8 +1,9 @@
+
 import cloudinary
 import cloudinary.uploader
+
 from app.models.publicacao import Publicacao
 from app.services.moderacaoService import moderarConteudo
-from app.services.moderacaoImagemService import moderarImagem
 
 
 class PublicacaoService:
@@ -10,49 +11,82 @@ class PublicacaoService:
     def __init__(self, repoPublicacao):
         self.repoPublicacao = repoPublicacao
 
-    def criarPublicacao(self, imagem, legenda, usuario_id, comunidade_id):
+    def criarPublicacao(
+        self,
+        imagem,
+        legenda,
+        usuario_id,
+        comunidade_id
+    ):
+        try:
+            if imagem is None:
+                return "DADOS_INVALIDOS"
 
-        if legenda:
-            permitido = moderarConteudo(legenda)
+            imagem_bytes = imagem.read()
 
-            if permitido is False:
+            try:
+                permitido = moderarConteudo(
+                    legenda,
+                    imagem_bytes,
+                    imagem.mimetype
+                )
+
+            except ValueError as erro:
+                print("Dados inválidos:", erro)
+                return "DADOS_INVALIDOS"
+
+            except Exception as erro:
+                print("Falha na moderação:", repr(erro))
+                return "ERRO_MODERACAO"
+
+            if permitido is not True:
                 return "BLOQUEADO"
 
-
-        imagem_permitida = moderarImagem(imagem)
-
-        if imagem_permitida is False:
-            return "BLOQUEADO"
-
-
-        try:
             imagem.seek(0)
 
-            resultado = cloudinary.uploader.upload(imagem)
+            resultado = cloudinary.uploader.upload(
+                imagem,
+                resource_type="image"
+            )
 
             imagem_url = resultado["secure_url"]
 
-        except Exception as e:
-            print("Erro no Cloudinary:", e)
+            novaPublicacao = Publicacao(
+                usuario_id=usuario_id,
+                comunidade_id=comunidade_id,
+                legenda=legenda,
+                imagem_url=imagem_url
+            )
+
+            publicacao_salva = (
+                self.repoPublicacao.salvarPublicacao(
+                    novaPublicacao
+                )
+            )
+
+            if not publicacao_salva:
+                return "ERRO"
+
+            return publicacao_salva
+
+        except Exception as erro:
+            print("Erro ao criar publicação:", repr(erro))
             return "ERRO"
-
-        novaPublicacao = Publicacao(
-            usuario_id=usuario_id,
-            comunidade_id=comunidade_id,
-            legenda=legenda,
-            imagem_url=imagem_url
-        )
-
-        return self.repoPublicacao.salvarPublicacao(novaPublicacao)
 
     def carregarPublicacao(self):
         return self.repoPublicacao.carregarPublicacoes()
 
     def apagarPublicacao(self, publicacao_id):
-        return self.repoPublicacao.apagarPublicacao(publicacao_id)
+        return self.repoPublicacao.apagarPublicacao(
+            publicacao_id
+        )
 
     def buscarPublicacao(self, publicacao_id):
-        return self.repoPublicacao.buscarPublicacao(publicacao_id)
+        return self.repoPublicacao.buscarPublicacao(
+            publicacao_id
+        )
 
     def carregarPublicacoesPorComunidade(self, comunidade_id):
-        return self.repoPublicacao.carregarPublicacoesPorComunidade(comunidade_id)
+        return self.repoPublicacao.carregarPublicacoesPorComunidade(
+            comunidade_id
+        )
