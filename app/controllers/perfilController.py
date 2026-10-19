@@ -50,3 +50,21 @@ def perfilController(app, perfilService):
             "email": usuario["email"],
             "foto_url": usuario["foto_url"]
         }, 200
+
+
+    @app.route("/buscarUsuarios", methods=["GET"])
+    def buscarUsuarios():
+
+        if "user.id" not in session:
+            return jsonify({"erro": "Não autenticado"}), 401
+
+        nome = request.args.get("nome", "").strip()
+
+        if not nome:
+            return jsonify([]), 200
+
+        usuario_id = session["user.id"]
+
+        usuarios = perfilService.buscarUsuariosPorNome(nome, usuario_id)
+
+        return jsonify(usuarios), 200

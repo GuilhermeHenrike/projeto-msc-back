@@ -85,3 +85,27 @@ class PerfilRepository:
         conexao.close()
 
         return publicacoes
+
+
+    def buscarUsuariosPorNome(self, nome, usuario_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT id, nome, foto_url
+            FROM usuarios
+            WHERE nome LIKE %s
+            AND id != %s
+            ORDER BY nome ASC
+            LIMIT 10
+        """
+
+        cursor.execute(sql, (f"%{nome}%", usuario_id))
+
+        usuarios = cursor.fetchall()
+
+        cursor.close()
+        conexao.close()
+
+        return usuarios

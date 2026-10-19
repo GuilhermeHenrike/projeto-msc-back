@@ -29,3 +29,13 @@ class PerfilService:
     def buscarPerfil(self, usuario_id):
         usuario = self.repoPerfil.buscarUsuario(usuario_id)
         return usuario
+
+    
+    def buscarUsuariosPorNome(self, nome, usuario_id):
+
+        nome = nome.strip()
+
+        if not nome:
+            return []
+
+        return self.repoPerfil.buscarUsuariosPorNome(nome, usuario_id)
