@@ -1,3 +1,4 @@
+
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
@@ -28,6 +29,7 @@ from app.services.senhaService import SenhaService
 from app.services.albumService import AlbumService
 from app.services.avaliacaoService import AvaliacaoService
 from app.services.composicaoService import ComposicaoService
+from app.services.artistasService import ArtistasService
 
 from flask_cors import CORS
 
@@ -42,6 +44,8 @@ from app.controllers.senhaController import senhaController
 from app.controllers.albumController import albumController
 from app.controllers.avaliacaoController import avaliacaoController
 from app.controllers.composicaoController import composicaoController
+from app.controllers.artistasController import artistasController
+
 
 def create_app():
 
@@ -119,6 +123,13 @@ def create_app():
     avaliacaoController(app, avaliacaoService)
     composicaoController(app, composicaoService)
 
+    # =========================
+    # ARTISTAS EM ALTA
+    # =========================
+
+    artistasService = ArtistasService()
+    artistasController(app, artistasService)
+
     @app.route("/")
     def login():
         return render_template("Login.html")
@@ -141,14 +152,18 @@ def create_app():
         publicacoes = publicacaoService.carregarPublicacao()
 
         for publicacao in publicacoes:
-            publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
+            publicacao["comentarios"] = comentarioService.carregarComentarios(
+                publicacao["id"]
+            )
 
-            publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
+            publicacao["curtidas"] = curtidaService.contarCurtidas(
+                publicacao["id"]
+            )
 
         return render_template(
             "Home.html",
             comunidades=comunidades,
-            publicacoes = publicacoes
+            publicacoes=publicacoes
         )
 
     @app.route("/enviar-codigo")
@@ -183,8 +198,8 @@ def create_app():
 
         usuario_id = session["user.id"]
 
-        comunidadesDisponiveis = comunidadeService.listarComunidadesNaoParticipa(
-            usuario_id
+        comunidadesDisponiveis = (
+            comunidadeService.listarComunidadesNaoParticipa(usuario_id)
         )
 
         return render_template(

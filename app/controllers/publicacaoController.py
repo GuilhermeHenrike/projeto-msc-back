@@ -1,4 +1,3 @@
-
 from flask import request, session, jsonify
 
 
@@ -12,13 +11,24 @@ def publicacaoController(app, publicacaoService):
                 "error": "Você precisa estar logado."
             }), 401
 
-        imagem = request.files.get("imagem")
+        arquivo = request.files.get("imagem")
         legenda = request.form.get("legenda", "").strip()
         comunidade_id = request.form.get("comunidade")
 
-        if imagem is None or not imagem.filename:
+        if arquivo is None or not arquivo.filename:
             return jsonify({
-                "error": "Selecione uma imagem."
+                "error": "Selecione uma imagem ou um vídeo."
+            }), 400
+
+        tipo_mime = arquivo.mimetype or ""
+
+        if tipo_mime.startswith("image/"):
+            tipo_midia = "imagem"
+        elif tipo_mime.startswith("video/"):
+            tipo_midia = "video"
+        else:
+            return jsonify({
+                "error": "Formato de arquivo não permitido."
             }), 400
 
         if not comunidade_id:
@@ -29,16 +39,17 @@ def publicacaoController(app, publicacaoService):
         usuario_id = session["user.id"]
 
         publicacao = publicacaoService.criarPublicacao(
-            imagem,
+            arquivo,
             legenda,
             usuario_id,
-            comunidade_id
+            comunidade_id,
+            tipo_midia
         )
 
         if publicacao == "BLOQUEADO":
             return jsonify({
                 "error": (
-                    "A imagem ou legenda contém "
+                    "A imagem, o vídeo ou a legenda contém "
                     "conteúdo não permitido."
                 )
             }), 422
@@ -46,7 +57,7 @@ def publicacaoController(app, publicacaoService):
         if publicacao == "DADOS_INVALIDOS":
             return jsonify({
                 "error": (
-                    "A imagem está vazia, é inválida "
+                    "O arquivo está vazio, é inválido "
                     "ou seu formato não é suportado."
                 )
             }), 400
@@ -128,3 +139,33 @@ def publicacaoController(app, publicacaoService):
             )
 
         return jsonify(publicacoes), 200
+
+    @app.route("/publicacoes/seguindo", methods=["GET"])
+    def publicacoesSeguindo():
+
+        usuario_id = session.get("user.id")
+
+        if not usuario_id:
+            return jsonify({
+                "erro": "Usuário não autenticado"
+            }), 401
+
+        try:
+            publicacoes = (
+                publicacaoService.listarFeedSeguindo(usuario_id)
+            )
+
+            return jsonify(publicacoes), 200
+
+        except Exception as erro:
+            print(
+                "Erro ao buscar publicações das comunidades seguidas: "
+                f"{erro}"
+            )
+
+            return jsonify({
+                "erro": (
+                    "Não foi possível carregar as publicações "
+                    "das comunidades seguidas."
+                )
+            }), 500

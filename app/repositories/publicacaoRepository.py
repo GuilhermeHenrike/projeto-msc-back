@@ -1,35 +1,51 @@
+
 from database import conectar
 
 
 class PublicacaoRepository:
 
+    
     def salvarPublicacao(self, publicacao):
 
         conexao = conectar()
         cursor = conexao.cursor()
 
-        sql = """
-            INSERT INTO publicacoes
-            (usuario_id, comunidade_id, legenda, imagem_url, status_moderacao)
-            VALUES (%s, %s, %s, %s, %s)
-        """
+        try:
+            sql = """
+                INSERT INTO publicacoes
+                (
+                    usuario_id,
+                    comunidade_id,
+                    legenda,
+                    imagem_url,
+                    tipo_midia,
+                    status_moderacao
+                )
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """
 
-        cursor.execute(sql, (
-            publicacao.usuario_id,
-            publicacao.comunidade_id,
-            publicacao.legenda,
-            publicacao.imagem_url,
-            publicacao.status_moderacao
-        ))
+            cursor.execute(sql, (
+                publicacao.usuario_id,
+                publicacao.comunidade_id,
+                publicacao.legenda,
+                publicacao.imagem_url,
+                publicacao.tipo_midia,
+                publicacao.status_moderacao
+            ))
 
-        publicacao.id = cursor.lastrowid
+            publicacao.id = cursor.lastrowid
+            conexao.commit()
 
-        conexao.commit()
+            return publicacao
 
-        cursor.close()
-        conexao.close()
+        except Exception as e:
+            conexao.rollback()
+            print("Erro ao salvar publicação:", e)
+            return "ERRO"
 
-        return publicacao
+        finally:
+            cursor.close()
+            conexao.close()
 
 
     def carregarPublicacoes(self):
@@ -42,6 +58,7 @@ class PublicacaoRepository:
             publicacoes.*,
             usuarios.nome AS nome_usuario,
             usuarios.foto_url,
+            comunidades.nome AS nome_comunidade,
 
             (
                 SELECT COUNT(*)
@@ -60,18 +77,19 @@ class PublicacaoRepository:
         JOIN usuarios
             ON publicacoes.usuario_id = usuarios.id
 
+        JOIN comunidades
+            ON publicacoes.comunidade_id = comunidades.id
+
         ORDER BY publicacoes.id DESC
         """
 
         cursor.execute(sql)
-
         publicacoes = cursor.fetchall()
 
         cursor.close()
         conexao.close()
 
         return publicacoes
-
 
     def buscarPublicacao(self, publicacao_id):
 
@@ -85,14 +103,12 @@ class PublicacaoRepository:
         """
 
         cursor.execute(sql, (publicacao_id,))
-
         publicacao = cursor.fetchone()
 
         cursor.close()
         conexao.close()
 
         return publicacao
-
 
     def apagarPublicacao(self, publicacao_id):
 
@@ -145,10 +161,59 @@ class PublicacaoRepository:
         """
 
         cursor.execute(sql, (comunidade_id,))
-
         publicacoes = cursor.fetchall()
 
         cursor.close()
         conexao.close()
 
         return publicacoes
+
+
+    def listarFeedSeguindo(self, usuario_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT
+            p.*,
+            u.nome AS nome_usuario,
+            u.foto_url,
+            comunidades.nome AS nome_comunidade,
+
+            (
+                SELECT COUNT(*)
+                FROM curtidas c
+                WHERE c.publicacao_id = p.id
+            ) AS total_curtidas,
+
+            (
+                SELECT COUNT(*)
+                FROM comentarios co
+                WHERE co.publicacao_id = p.id
+            ) AS total_comentarios
+
+        FROM publicacoes p
+
+        INNER JOIN membros_comunidade mc
+            ON mc.comunidade_id = p.comunidade_id
+
+        INNER JOIN usuarios u
+            ON u.id = p.usuario_id
+
+        INNER JOIN comunidades
+            ON comunidades.id = p.comunidade_id
+
+        WHERE mc.usuario_id = %s
+
+        ORDER BY p.data_criacao DESC;
+        """
+
+        try:
+            cursor.execute(sql, (usuario_id,))
+            publicacoes = cursor.fetchall()
+            return publicacoes
+
+        finally:
+            cursor.close()
+            conexao.close()

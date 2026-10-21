@@ -1,4 +1,6 @@
 from app.models.usuario import Usuario
+import cloudinary
+import cloudinary.uploader
 
 
 class PerfilService:
@@ -7,10 +9,23 @@ class PerfilService:
         self.repoPerfil = repoPerfil
         self.avaliacaoService = avaliacaoService
 
-    def atualizarPerfil(self, nome, imagem_url, usuario_id):
 
-        usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url)
+    def atualizarPerfil(self, nome, usuario_id, foto_perfil=None, foto_url_background=None
+    ):
+        imagem_url = None
+
+        if foto_perfil:
+            resultado = cloudinary.uploader.upload(foto_perfil, folder="yrplace/perfis")
+            imagem_url = resultado["secure_url"]
+
+        if foto_url_background:
+            resultado = cloudinary.uploader.upload(foto_url_background, folder="yrplace/capas")
+            foto_url_background = resultado["secure_url"]
+
+        usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url, foto_url_background=foto_url_background)
+
         return self.repoPerfil.editarPerfil(usuarioAtualizado)
+
 
 
     def buscarPerfilComDados(self, usuario_id):

@@ -5,17 +5,36 @@ def perfilController(app, perfilService):
 
     @app.route("/perfil", methods=["POST"])
     def editarPerfil():
-
         if "user.id" not in session:
             return {"erro": "Não autenticado"}, 401
-        
-        nome = request.form.get("nome")
-        foto_url = request.form.get("foto_url")
+
+        nome = request.form.get("nome", "").strip()
         usuario_id = session["user.id"]
 
-        perfilService.atualizarPerfil(nome, foto_url, usuario_id)
+        if not nome:
+            return {"erro": "O nome não pode ficar vazio."}, 400
 
-        return {"mensagem": "Perfil atualizado com sucesso"}, 200
+        foto_perfil = request.files.get("foto_perfil")
+        foto_capa = request.files.get("foto_url_background")
+
+        try:
+            perfilService.atualizarPerfil(
+                nome=nome,
+                usuario_id=usuario_id,
+                foto_perfil=foto_perfil,
+                foto_url_background=foto_capa
+            )
+
+            return {
+                "mensagem": "Perfil atualizado com sucesso"
+            }, 200
+
+        except Exception as erro:
+            print(f"Erro ao atualizar perfil: {erro}")
+            return {
+                "erro": "Não foi possível atualizar o perfil."
+            }, 500
+
 
 
     @app.route("/perfil/<int:usuario_id>", methods=["GET"])
@@ -48,7 +67,8 @@ def perfilController(app, perfilService):
             "id": usuario["id"],
             "nome": usuario["nome"],
             "email": usuario["email"],
-            "foto_url": usuario["foto_url"]
+            "foto_url": usuario["foto_url"],
+            "foto_url_background": usuario["foto_url_background"]
         }, 200
 
 

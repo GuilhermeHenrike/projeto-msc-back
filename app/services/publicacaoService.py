@@ -1,4 +1,3 @@
-
 import cloudinary
 import cloudinary.uploader
 
@@ -13,51 +12,82 @@ class PublicacaoService:
 
     def criarPublicacao(
         self,
-        imagem,
+        arquivo,
         legenda,
         usuario_id,
-        comunidade_id
+        comunidade_id,
+        tipo_midia
     ):
         try:
-            if imagem is None:
+            if arquivo is None or not arquivo.filename:
                 return "DADOS_INVALIDOS"
 
-            imagem_bytes = imagem.read()
+            # Lê o conteúdo do arquivo
+            arquivo_bytes = arquivo.read()
 
-            try:
-                permitido = moderarConteudo(
-                    legenda,
-                    imagem_bytes,
-                    imagem.mimetype
-                )
-
-            except ValueError as erro:
-                print("Dados inválidos:", erro)
+            if not arquivo_bytes:
                 return "DADOS_INVALIDOS"
 
-            except Exception as erro:
-                print("Falha na moderação:", repr(erro))
-                return "ERRO_MODERACAO"
+            # Modera a legenda e, quando for imagem,
+            # também envia os dados da imagem para moderação.
+            if tipo_midia == "imagem":
+                try:
+                    permitido = moderarConteudo(
+                        legenda,
+                        arquivo_bytes,
+                        arquivo.mimetype
+                    )
 
-            if permitido is not True:
-                return "BLOQUEADO"
+                except ValueError as erro:
+                    print("Dados inválidos:", erro)
+                    return "DADOS_INVALIDOS"
 
-            imagem.seek(0)
+                except Exception as erro:
+                    print("Falha na moderação:", repr(erro))
+                    return "ERRO_MODERACAO"
 
+                if permitido is not True:
+                    return "BLOQUEADO"
+
+            else:
+                # Para vídeos, modera a legenda.
+                # Isso não representa moderação do conteúdo do vídeo.
+                if legenda:
+                    try:
+                        permitido = moderarConteudo(legenda)
+                    except ValueError as erro:
+                        print("Dados inválidos:", erro)
+                        return "DADOS_INVALIDOS"
+                    except Exception as erro:
+                        print("Falha na moderação:", repr(erro))
+                        return "ERRO_MODERACAO"
+
+                    if permitido is not True:
+                        return "BLOQUEADO"
+
+            # Volta o arquivo ao início antes do upload
+            arquivo.seek(0)
+
+            # Envia a imagem ou o vídeo ao Cloudinary
             resultado = cloudinary.uploader.upload(
-                imagem,
-                resource_type="image"
+                arquivo,
+                resource_type=(
+                    "video" if tipo_midia == "video" else "image"
+                )
             )
 
             imagem_url = resultado["secure_url"]
 
+            # Monta a publicação
             novaPublicacao = Publicacao(
                 usuario_id=usuario_id,
                 comunidade_id=comunidade_id,
                 legenda=legenda,
+                tipo_midia=tipo_midia,
                 imagem_url=imagem_url
             )
 
+            # Salva no banco de dados
             publicacao_salva = (
                 self.repoPublicacao.salvarPublicacao(
                     novaPublicacao
@@ -90,3 +120,6 @@ class PublicacaoService:
         return self.repoPublicacao.carregarPublicacoesPorComunidade(
             comunidade_id
         )
+
+    def listarFeedSeguindo(self, usuario_id):
+        return self.repoPublicacao.listarFeedSeguindo(usuario_id)
