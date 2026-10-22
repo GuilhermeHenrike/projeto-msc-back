@@ -2,7 +2,10 @@ import cloudinary
 import cloudinary.uploader
 
 from app.models.publicacao import Publicacao
-from app.services.moderacaoService import moderarConteudo
+from app.services.moderacaoService import (
+    moderarConteudo,
+    moderarLegenda
+)
 
 
 class PublicacaoService:
@@ -19,6 +22,7 @@ class PublicacaoService:
         tipo_midia
     ):
         try:
+            # Verifica se o arquivo foi enviado
             if arquivo is None or not arquivo.filename:
                 return "DADOS_INVALIDOS"
 
@@ -28,42 +32,35 @@ class PublicacaoService:
             if not arquivo_bytes:
                 return "DADOS_INVALIDOS"
 
-            # Modera a legenda e, quando for imagem,
-            # também envia os dados da imagem para moderação.
-            if tipo_midia == "imagem":
-                try:
+            # Moderação do conteúdo
+            try:
+                if tipo_midia == "imagem":
+                    # Modera a legenda e a imagem
                     permitido = moderarConteudo(
                         legenda,
                         arquivo_bytes,
                         arquivo.mimetype
                     )
 
-                except ValueError as erro:
-                    print("Dados inválidos:", erro)
+                elif tipo_midia == "video":
+                    # Modera a legenda do vídeo
+                    # O vídeo em si não é analisado visualmente aqui
+                    permitido = moderarLegenda(legenda)
+
+                else:
                     return "DADOS_INVALIDOS"
 
-                except Exception as erro:
-                    print("Falha na moderação:", repr(erro))
-                    return "ERRO_MODERACAO"
+            except ValueError as erro:
+                print("Dados inválidos:", erro)
+                return "DADOS_INVALIDOS"
 
-                if permitido is not True:
-                    return "BLOQUEADO"
+            except Exception as erro:
+                print("Falha na moderação:", repr(erro))
+                return "ERRO_MODERACAO"
 
-            else:
-                # Para vídeos, modera a legenda.
-                # Isso não representa moderação do conteúdo do vídeo.
-                if legenda:
-                    try:
-                        permitido = moderarConteudo(legenda)
-                    except ValueError as erro:
-                        print("Dados inválidos:", erro)
-                        return "DADOS_INVALIDOS"
-                    except Exception as erro:
-                        print("Falha na moderação:", repr(erro))
-                        return "ERRO_MODERACAO"
-
-                    if permitido is not True:
-                        return "BLOQUEADO"
+            # Bloqueia conteúdos reprovados
+            if permitido is not True:
+                return "BLOQUEADO"
 
             # Volta o arquivo ao início antes do upload
             arquivo.seek(0)

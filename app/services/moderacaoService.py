@@ -1,4 +1,3 @@
-
 import os
 import base64
 
@@ -16,7 +15,39 @@ client = OpenAI(
 ) if api_key else None
 
 
+def moderarLegenda(legenda):
+    """
+    Modera somente o texto da legenda.
+    Usada em publicações de vídeos.
+    """
+
+    if client is None:
+        raise RuntimeError("OPENAI_API_KEY não configurada.")
+
+    resposta = client.moderations.create(
+        model="omni-moderation-latest",
+        input=legenda or ""
+    )
+
+    resultado = resposta.results[0]
+
+    print(
+        "Resultado da moderação da legenda:",
+        resultado.flagged
+    )
+    print(
+        "Categorias identificadas:",
+        resultado.categories
+    )
+
+    return not resultado.flagged
+
+
 def moderarConteudo(legenda, imagem_bytes, mime_type):
+    """
+    Modera a legenda e o conteúdo visual de uma imagem.
+    """
+
     if client is None:
         raise RuntimeError("OPENAI_API_KEY não configurada.")
 
@@ -39,7 +70,9 @@ def moderarConteudo(legenda, imagem_bytes, mime_type):
         imagem_bytes
     ).decode("utf-8")
 
-    imagem_url = f"data:{mime_type};base64,{imagem_base64}"
+    imagem_url = (
+        f"data:{mime_type};base64,{imagem_base64}"
+    )
 
     resposta = client.moderations.create(
         model="omni-moderation-latest",
@@ -59,7 +92,13 @@ def moderarConteudo(legenda, imagem_bytes, mime_type):
 
     resultado = resposta.results[0]
 
-    print("Resultado da moderação:", resultado.flagged)
-    print("Categorias identificadas:", resultado.categories)
+    print(
+        "Resultado da moderação:",
+        resultado.flagged
+    )
+    print(
+        "Categorias identificadas:",
+        resultado.categories
+    )
 
     return not resultado.flagged
