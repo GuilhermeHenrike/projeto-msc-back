@@ -99,7 +99,7 @@ def create_app():
 
     authService = AuthService(repoAuth)
     comunidadeService = ComunidadeService(repoComunidade)
-    publicacaoService = PublicacaoService(repoPublicacao)
+    publicacaoService = PublicacaoService(repoPublicacao, repoComunidade)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
     senhaService = SenhaService(repoSenha, repoAuth, mail)

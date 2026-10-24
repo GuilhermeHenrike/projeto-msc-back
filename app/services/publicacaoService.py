@@ -10,8 +10,9 @@ from app.services.moderacaoService import (
 
 class PublicacaoService:
 
-    def __init__(self, repoPublicacao):
+    def __init__(self, repoPublicacao, repoComunidade):
         self.repoPublicacao = repoPublicacao
+        self.repoComunidade = repoComunidade
 
     def criarPublicacao(
         self,
@@ -22,6 +23,14 @@ class PublicacaoService:
         tipo_midia
     ):
         try:
+
+            # Verifica se o não usuario faz parte da comunidade
+            if not self.repoComunidade.usuarioParticipa(
+                usuario_id,
+                comunidade_id
+            ):
+                return "NAO_PARTICIPA"
+
             # Verifica se o arquivo foi enviado
             if arquivo is None or not arquivo.filename:
                 return "DADOS_INVALIDOS"

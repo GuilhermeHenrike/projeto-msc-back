@@ -8,6 +8,9 @@ class AuthService:
 
     def fazerRegistro(self, nome, email, senha):
 
+        if len(senha) < 8:
+            return "SENHA_CURTA"
+
         senhaHash = generate_password_hash(senha)
 
         novoUser = Usuario(nome, email, senhaHash, None)

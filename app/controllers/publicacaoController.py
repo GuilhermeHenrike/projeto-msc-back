@@ -70,6 +70,11 @@ def publicacaoController(app, publicacaoService):
                 )
             }), 503
 
+        if publicacao == "NAO_PARTICIPA":
+            return jsonify({
+                "error": "Você precisa participar da comunidade para publicar."
+            }), 403
+
         if publicacao == "ERRO":
             return jsonify({
                 "error": "Erro ao salvar a publicação."

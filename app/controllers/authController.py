@@ -1,4 +1,4 @@
-from flask import request, session
+from flask import request, session, jsonify
 from mysql.connector.errors import IntegrityError
 
 
@@ -12,12 +12,17 @@ def authController(app, authService):
         senha = dados.get("senha")
 
         try:
-            authService.fazerRegistro(nome, email, senha)
+            resultado = authService.fazerRegistro(nome, email, senha)
+
+            if resultado == "SENHA_CURTA":
+                return jsonify({
+                    "erro": "A senha deve ter pelo menos 8 caracteres."
+                }), 400
+
             return {"mensagem": "Usuário registrado com sucesso"}, 201
 
         except IntegrityError:
             return {"erro": "Este email já está cadastrado"}, 409
-
 
     @app.route("/logar", methods=["POST"])
     def logar():
