@@ -213,3 +213,22 @@ def comunidadeController(app, comunidadeService):
             )
 
         return comunidades
+
+# BUSCAR COMUNIDADES DE UM USUÁRIO PELO ID
+
+    @app.route("/comunidadesUsuario/<int:usuario_id>", methods=["GET"])
+    def comunidadesUsuario(usuario_id):
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        comunidades = comunidadeService.listarTodasComunidadesDoUsuario(
+            usuario_id
+        )
+
+        for comunidade in comunidades:
+            comunidade["total_membros"] = comunidadeService.contarMembros(
+                comunidade["id"]
+            )
+
+        return comunidades, 200
