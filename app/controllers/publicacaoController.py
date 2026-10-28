@@ -84,16 +84,15 @@ def publicacaoController(app, publicacaoService):
             "message": "Publicação criada com sucesso."
         }), 201
 
-    @app.route(
-        "/apagar-publicacao/<int:id>",
-        methods=["DELETE"]
-    )
+    @app.route("/apagar-publicacao/<int:id>", methods=["DELETE"])
     def apagarPublicacao(id):
 
         if "user.id" not in session:
             return jsonify({
                 "error": "Usuário não está logado."
             }), 401
+
+        usuario_id = int(session["user.id"])
 
         publicacao = publicacaoService.buscarPublicacao(id)
 
@@ -102,9 +101,26 @@ def publicacaoController(app, publicacaoService):
                 "error": "Publicação não encontrada."
             }), 404
 
-        if publicacao["usuario_id"] != session["user.id"]:
+        comunidade = publicacaoService.buscarComunidade(
+            publicacao["comunidade_id"]
+        )
+
+        if comunidade is None:
             return jsonify({
-                "error": "Você não pode apagar essa publicação."
+                "error": "Comunidade não encontrada."
+            }), 404
+
+        eh_autor = (
+            usuario_id == int(publicacao["usuario_id"])
+        )
+
+        eh_criador = (
+            usuario_id == int(comunidade["criador_id"])
+        )
+
+        if not (eh_autor or eh_criador):
+            return jsonify({
+                "error": "Você não tem permissão para apagar esta publicação."
             }), 403
 
         publicacaoService.apagarPublicacao(id)
@@ -124,10 +140,7 @@ def publicacaoController(app, publicacaoService):
 
         return jsonify(publicacoes), 200
 
-    @app.route(
-        "/publicacoes/comunidade/<int:comunidade_id>",
-        methods=["GET"]
-    )
+    @app.route("/publicacoes/comunidade/<int:comunidade_id>", methods=["GET"])
     def carregarPublicacoesComunidade(comunidade_id):
 
         publicacoes = (

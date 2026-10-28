@@ -1,3 +1,4 @@
+
 import cloudinary
 import cloudinary.uploader
 
@@ -14,17 +15,10 @@ class PublicacaoService:
         self.repoPublicacao = repoPublicacao
         self.repoComunidade = repoComunidade
 
-    def criarPublicacao(
-        self,
-        arquivo,
-        legenda,
-        usuario_id,
-        comunidade_id,
-        tipo_midia
-    ):
+    def criarPublicacao(self, arquivo, legenda, usuario_id, comunidade_id, tipo_midia):
         try:
 
-            # Verifica se o não usuario faz parte da comunidade
+            # Verifica se o usuário faz parte da comunidade
             if not self.repoComunidade.usuarioParticipa(
                 usuario_id,
                 comunidade_id
@@ -53,7 +47,6 @@ class PublicacaoService:
 
                 elif tipo_midia == "video":
                     # Modera a legenda do vídeo
-                    # O vídeo em si não é analisado visualmente aqui
                     permitido = moderarLegenda(legenda)
 
                 else:
@@ -85,13 +78,7 @@ class PublicacaoService:
             imagem_url = resultado["secure_url"]
 
             # Monta a publicação
-            novaPublicacao = Publicacao(
-                usuario_id=usuario_id,
-                comunidade_id=comunidade_id,
-                legenda=legenda,
-                tipo_midia=tipo_midia,
-                imagem_url=imagem_url
-            )
+            novaPublicacao = Publicacao(usuario_id=usuario_id, comunidade_id=comunidade_id, legenda=legenda, tipo_midia=tipo_midia, imagem_url=imagem_url)
 
             # Salva no banco de dados
             publicacao_salva = (
@@ -122,10 +109,18 @@ class PublicacaoService:
             publicacao_id
         )
 
+    # Busca a comunidade para verificar quem é o criador
+    def buscarComunidade(self, comunidade_id):
+        return self.repoComunidade.buscarComunidade(
+            comunidade_id
+        )
+
     def carregarPublicacoesPorComunidade(self, comunidade_id):
         return self.repoPublicacao.carregarPublicacoesPorComunidade(
             comunidade_id
         )
 
     def listarFeedSeguindo(self, usuario_id):
-        return self.repoPublicacao.listarFeedSeguindo(usuario_id)
+        return self.repoPublicacao.listarFeedSeguindo(
+            usuario_id
+        )
