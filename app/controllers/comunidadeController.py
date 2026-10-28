@@ -1,5 +1,5 @@
 
-from flask import request, session, jsonify
+from flask import request, session
 from mysql.connector.errors import IntegrityError
 import cloudinary.uploader
 
@@ -7,6 +7,7 @@ import cloudinary.uploader
 def comunidadeController(app, comunidadeService):
 
     # CRIAR COMUNIDADE
+
     @app.route("/comunidade", methods=["POST"])
     def criarComunidade():
 
@@ -29,13 +30,14 @@ def comunidadeController(app, comunidadeService):
             comunidadeService.criarComunidade(
                 nome, genero, usuario_id, descricao, imagem_url
             )
+
             return {"mensagem": "Comunidade criada com sucesso"}, 201
 
         except IntegrityError:
             return {"erro": "Já existe uma comunidade com esse nome"}, 409
 
-
     # ATUALIZAR COMUNIDADE
+
     @app.route("/comunidade/<int:id>", methods=["PUT"])
     def atualizarComunidade(id):
 
@@ -66,8 +68,8 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Comunidade atualizada com sucesso"}, 200
 
-
     # APAGAR COMUNIDADE
+
     @app.route("/comunidade/<int:id>", methods=["DELETE"])
     def apagarComunidade(id):
 
@@ -86,8 +88,8 @@ def comunidadeController(app, comunidadeService):
 
         return "", 204
 
+    # COMUNIDADES DISPONÍVEIS
 
-    # BUSCAR COMUNIDADES DISPONÍVEIS
     @app.route("/buscarComunidadesDisponiveis", methods=["GET"])
     def buscarComunidadesDisponiveis():
 
@@ -98,8 +100,8 @@ def comunidadeController(app, comunidadeService):
 
         return comunidadeService.listarComunidadesNaoParticipa(usuario_id)
 
+    # BUSCAR UMA COMUNIDADE PELO ID
 
-    # BUSCAR COMUNIDADE POR ID
     @app.route("/buscarComunidade/<int:comunidade_id>", methods=["GET"])
     def buscarComunidade(comunidade_id):
 
@@ -113,22 +115,24 @@ def comunidadeController(app, comunidadeService):
         if comunidade is None:
             return {"erro": "Comunidade não encontrada"}, 404
 
-        participando = comunidadeService.usuarioParticipa(
+        comunidade["participando"] = comunidadeService.usuarioParticipa(
             usuario_id,
             comunidade_id
         )
 
-        comunidade["participando"] = participando
-
-        # Identifica o criador da comunidade
         comunidade["eh_criador"] = (
             int(usuario_id) == int(comunidade["criador_id"])
         )
 
+        # Quantidade de membros
+        comunidade["total_membros"] = comunidadeService.contarMembros(
+            comunidade_id
+        )
+
         return comunidade
 
+    # COMUNIDADES DO USUÁRIO
 
-    # BUSCAR COMUNIDADES DO USUÁRIO
     @app.route("/buscarComunidadeUsuario", methods=["GET"])
     def buscarComunidadeUsuario():
 
@@ -139,8 +143,8 @@ def comunidadeController(app, comunidadeService):
 
         return comunidadeService.listarTodasComunidadesDoUsuario(usuario_id)
 
+    # FILTRAR POR GÊNERO
 
-    # FILTRAR COMUNIDADES POR GÊNERO
     @app.route("/filtroGeneroComunidade/<string:genero>", methods=["GET"])
     def filtroGeneroComunidade(genero):
 
@@ -149,8 +153,8 @@ def comunidadeController(app, comunidadeService):
 
         return comunidadeService.filtroComunidadesPorGenero(genero)
 
-
     # ENTRAR NA COMUNIDADE
+
     @app.route("/entrarComunidade/<int:comunidade_id>", methods=["POST"])
     def entrarComunidade(comunidade_id):
 
@@ -165,16 +169,12 @@ def comunidadeController(app, comunidadeService):
         )
 
         if not entrou:
-            return {
-                "erro": "Você já participa desta comunidade"
-            }, 409
+            return {"erro": "Você já participa desta comunidade"}, 409
 
-        return {
-            "mensagem": "Entrou na comunidade com sucesso"
-        }, 200
-
+        return {"mensagem": "Entrou na comunidade com sucesso"}, 200
 
     # SAIR DA COMUNIDADE
+
     @app.route("/sairComunidade/<int:comunidade_id>", methods=["POST"])
     def sairComunidade(comunidade_id):
 
@@ -193,12 +193,10 @@ def comunidadeController(app, comunidadeService):
                 "erro": "Você não participa desta comunidade"
             }, 400
 
-        return {
-            "mensagem": "Saiu da comunidade com sucesso"
-        }, 200
+        return {"mensagem": "Saiu da comunidade com sucesso"}, 200
 
+    # PESQUISAR COMUNIDADES PELO NOME
 
-    # BUSCAR COMUNIDADES PELO NOME
     @app.route("/buscarComunidades", methods=["GET"])
     def buscarComunidades():
 
@@ -207,4 +205,11 @@ def comunidadeController(app, comunidadeService):
 
         nome = request.args.get("nome", "")
 
-        return comunidadeService.buscarComunidades(nome)
+        comunidades = comunidadeService.buscarComunidades(nome)
+
+        for comunidade in comunidades:
+            comunidade["total_membros"] = comunidadeService.contarMembros(
+                comunidade["id"]
+            )
+
+        return comunidades

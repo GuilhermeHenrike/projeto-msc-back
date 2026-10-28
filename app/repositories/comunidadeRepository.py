@@ -258,3 +258,21 @@ class ComunidadeRepository:
         conexao.close()
 
         return comunidades
+
+    def contarMembros(self, comunidade_id):
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            SELECT COUNT(DISTINCT usuario_id)
+            FROM membros_comunidade
+            WHERE comunidade_id = %s
+        """
+
+        cursor.execute(sql, (comunidade_id,))
+        total = cursor.fetchone()[0]
+
+        cursor.close()
+        conexao.close()
+
+        return total

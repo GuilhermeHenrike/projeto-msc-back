@@ -83,3 +83,6 @@ class ComunidadeService:
     def buscarComunidades(self, nome):
 
         return self.repoComunidade.buscarComunidadesPorNome(nome)
+
+    def contarMembros(self, comunidade_id):
+        return self.repoComunidade.contarMembros(comunidade_id)
