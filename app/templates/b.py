@@ -1,1 +1,0 @@
-## testar com render_template

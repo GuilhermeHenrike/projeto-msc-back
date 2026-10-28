@@ -1,1 +1,0 @@
-## coisas do banco de dados pro service

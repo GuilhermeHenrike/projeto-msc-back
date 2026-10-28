@@ -5,5 +5,5 @@ def conectar():
         host="localhost",
         user="root",
         password="ny2005ny", ## TUA SENHA
-        database="projeto-msc"
+        database="music_hub"
     )

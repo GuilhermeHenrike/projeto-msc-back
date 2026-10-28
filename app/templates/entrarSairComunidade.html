@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Comunidades</title>
+</head>
+
+<body>
+
+    <h1>Comunidades disponíveis</h1>
+
+    {% if comunidades %}
+
+        {% for comunidade in comunidades %}
+
+            <div>
+
+                <h2>{{ comunidade.nome }}</h2>
+
+                <p>
+                    Gênero: {{ comunidade.genero }}
+                </p>
+
+                <p>
+                    {{ comunidade.descricao }}
+                </p>
+
+                <form
+                    action="/entrarComunidade/{{ comunidade.id }}"
+                    method="POST"
+                >
+                    <button type="submit">
+                        Entrar
+                    </button>
+                </form>
+
+            </div>
+
+            <hr>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            Não há comunidades disponíveis para entrar.
+        </p>
+
+    {% endif %}
+
+    <a href="/home">Voltar para Home</a>
+
+</body>
+
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Criar publicação</title>
+</head>
+
+<body>
+
+    <h1>Criar publicação</h1>
+
+    <form action="/publicacao" method="POST" enctype="multipart/form-data">
+
+        <label>Imagem:</label>
+        <input type="file" name="imagem" accept="image/*" required>
+
+        <br><br>
+
+        <label>Legenda:</label>
+        <textarea name="legenda"></textarea>
+
+        <br><br>
+
+        <label>ID da comunidade:</label>
+        <input type="number" name="comunidade" required>
+
+        <br><br>
+
+        <button type="submit">Publicar</button>
+
+    </form>
+
+</body>
+</html>
