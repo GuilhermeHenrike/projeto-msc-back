@@ -96,8 +96,10 @@ class PublicacaoService:
             print("Erro ao criar publicação:", repr(erro))
             return "ERRO"
 
-    def carregarPublicacao(self):
-        return self.repoPublicacao.carregarPublicacoes()
+    def carregarPublicacao(self, usuario_id=None):
+        return self.repoPublicacao.carregarPublicacoes(
+            usuario_id
+        )
 
     def apagarPublicacao(self, publicacao_id):
         return self.repoPublicacao.apagarPublicacao(
@@ -115,10 +117,8 @@ class PublicacaoService:
             comunidade_id
         )
 
-    def carregarPublicacoesPorComunidade(self, comunidade_id):
-        return self.repoPublicacao.carregarPublicacoesPorComunidade(
-            comunidade_id
-        )
+    def carregarPublicacoesPorComunidade(self, comunidade_id, usuario_id=None):
+        return self.repoPublicacao.carregarPublicacoesPorComunidade(comunidade_id, usuario_id)
 
     def listarFeedSeguindo(self, usuario_id):
         return self.repoPublicacao.listarFeedSeguindo(
