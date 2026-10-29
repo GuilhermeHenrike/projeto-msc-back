@@ -1,5 +1,4 @@
-from flask import redirect, session
-
+from flask import jsonify, session
 
 def curtidaController(app, curtidaService):
 
@@ -7,10 +6,20 @@ def curtidaController(app, curtidaService):
     def curtir(publicacao_id):
 
         if "user.id" not in session:
-            return redirect("/")
+            return jsonify({"erro": "Não autenticado"}), 401
 
         usuario_id = session["user.id"]
 
-        curtidaService.curtir(usuario_id, publicacao_id)
+        curtido = curtidaService.curtir(
+            usuario_id,
+            publicacao_id
+        )
 
-        return "publicacao curtida!"
+        total_curtidas = curtidaService.contarCurtidas(
+            publicacao_id
+        )
+
+        return jsonify({
+            "curtido": curtido,
+            "total_curtidas": total_curtidas
+        }), 200

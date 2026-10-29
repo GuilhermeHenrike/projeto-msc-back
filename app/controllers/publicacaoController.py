@@ -1,8 +1,10 @@
+
 from flask import request, session, jsonify
 
 
 def publicacaoController(app, publicacaoService):
 
+    # CRIAR PUBLICAÇÃO
     @app.route("/publicacao", methods=["POST"])
     def criarPublicacao():
 
@@ -72,7 +74,10 @@ def publicacaoController(app, publicacaoService):
 
         if publicacao == "NAO_PARTICIPA":
             return jsonify({
-                "error": "Você precisa participar da comunidade para publicar."
+                "error": (
+                    "Você precisa participar da comunidade "
+                    "para publicar."
+                )
             }), 403
 
         if publicacao == "ERRO":
@@ -84,6 +89,7 @@ def publicacaoController(app, publicacaoService):
             "message": "Publicação criada com sucesso."
         }), 201
 
+    # APAGAR PUBLICAÇÃO
     @app.route("/apagar-publicacao/<int:id>", methods=["DELETE"])
     def apagarPublicacao(id):
 
@@ -120,44 +126,63 @@ def publicacaoController(app, publicacaoService):
 
         if not (eh_autor or eh_criador):
             return jsonify({
-                "error": "Você não tem permissão para apagar esta publicação."
+                "error": (
+                    "Você não tem permissão para "
+                    "apagar esta publicação."
+                )
             }), 403
 
         publicacaoService.apagarPublicacao(id)
 
         return "", 204
 
+    # FEED DESCOBRIR
     @app.route("/publicacoes", methods=["GET"])
     def carregarPublicacoes():
 
-        publicacoes = publicacaoService.carregarPublicacao()
         usuario_id = session.get("user.id")
+
+        # Passa o usuário para verificar suas curtidas
+        publicacoes = publicacaoService.carregarPublicacao(
+            usuario_id
+        )
 
         for publicacao in publicacoes:
             publicacao["eh_dono"] = (
-                publicacao["usuario_id"] == usuario_id
+                int(publicacao["usuario_id"]) == int(usuario_id)
+                if usuario_id is not None
+                else False
             )
 
         return jsonify(publicacoes), 200
 
-    @app.route("/publicacoes/comunidade/<int:comunidade_id>", methods=["GET"])
+    # PUBLICAÇÕES DE UMA COMUNIDADE
+    @app.route(
+        "/publicacoes/comunidade/<int:comunidade_id>",
+        methods=["GET"]
+    )
     def carregarPublicacoesComunidade(comunidade_id):
 
+        usuario_id = session.get("user.id")
+
+        # Passa o usuário para verificar suas curtidas
         publicacoes = (
             publicacaoService.carregarPublicacoesPorComunidade(
-                comunidade_id
+                comunidade_id,
+                usuario_id
             )
         )
 
-        usuario_id = session.get("user.id")
-
         for publicacao in publicacoes:
             publicacao["eh_dono"] = (
-                publicacao["usuario_id"] == usuario_id
+                int(publicacao["usuario_id"]) == int(usuario_id)
+                if usuario_id is not None
+                else False
             )
 
         return jsonify(publicacoes), 200
 
+    # FEED SEGUINDO
     @app.route("/publicacoes/seguindo", methods=["GET"])
     def publicacoesSeguindo():
 
@@ -170,15 +195,17 @@ def publicacaoController(app, publicacaoService):
 
         try:
             publicacoes = (
-                publicacaoService.listarFeedSeguindo(usuario_id)
+                publicacaoService.listarFeedSeguindo(
+                    usuario_id
+                )
             )
 
             return jsonify(publicacoes), 200
 
         except Exception as erro:
             print(
-                "Erro ao buscar publicações das comunidades seguidas: "
-                f"{erro}"
+                "Erro ao buscar publicações das "
+                f"comunidades seguidas: {erro}"
             )
 
             return jsonify({
