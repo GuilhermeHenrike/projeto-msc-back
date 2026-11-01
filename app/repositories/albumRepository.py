@@ -1,78 +1,75 @@
 from database import conectar
 
-
 class AlbumRepository:
 
     def buscarAlbumPorDeezerId(self, deezer_id):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT *
-            FROM albuns
-            WHERE deezer_id = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                sql = """
+                    SELECT *
+                    FROM albuns
+                    WHERE deezer_id = %s
+                """
 
-        cursor.execute(sql, (deezer_id,))
+                cursor.execute(sql, (deezer_id,))
+                return cursor.fetchone()
 
-        album = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        return album
+        finally:
+            conexao.close()
 
 
     def salvarAlbum(self, album):
-
         album_existente = self.buscarAlbumPorDeezerId(album.deezer_id)
 
         if album_existente:
             return album_existente
 
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            INSERT INTO albuns
-            (deezer_id, titulo, artista, capa_url)
-            VALUES (%s, %s, %s, %s)
-        """
+        try:
+            with conexao.cursor() as cursor:
+                sql = """
+                    INSERT INTO albuns
+                    (deezer_id, titulo, artista, capa_url)
+                    VALUES (%s, %s, %s, %s)
+                    RETURNING id
+                """
 
-        cursor.execute(sql, (
-            album.deezer_id,
-            album.titulo,
-            album.artista,
-            album.capa_url
-        ))
+                cursor.execute(sql, (
+                    album.deezer_id,
+                    album.titulo,
+                    album.artista,
+                    album.capa_url
+                ))
 
-        album.id = cursor.lastrowid
+                album.id = cursor.fetchone()["id"]
 
-        conexao.commit()
+            conexao.commit()
+            return album
 
-        cursor.close()
-        conexao.close()
+        except Exception:
+            conexao.rollback()
+            raise
 
-        return album
+        finally:
+            conexao.close()
 
 
     def carregarAlbum(self, album_id):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT *
-            FROM albuns
-            WHERE id = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                sql = """
+                    SELECT *
+                    FROM albuns
+                    WHERE id = %s
+                """
 
-        cursor.execute(sql, (album_id,))
+                cursor.execute(sql, (album_id,))
+                return cursor.fetchone()
 
-        album = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        return album
+        finally:
+            conexao.close()

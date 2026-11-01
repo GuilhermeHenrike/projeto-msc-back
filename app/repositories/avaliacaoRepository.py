@@ -1,113 +1,107 @@
 from database import conectar
 
-
 class AvaliacaoRepository:
 
     def salvarAvaliacao(self, avaliacao):
-
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            INSERT INTO avaliacoes
-            (usuario_id, album_id, nota)
-            VALUES (%s, %s, %s)
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    INSERT INTO avaliacoes
+                    (usuario_id, album_id, nota)
+                    VALUES (%s, %s, %s)
+                    RETURNING id
+                """, (
+                    avaliacao.usuario_id,
+                    avaliacao.album_id,
+                    avaliacao.nota
+                ))
 
-        cursor.execute(sql, (
-            avaliacao.usuario_id,
-            avaliacao.album_id,
-            avaliacao.nota
-        ))
+                avaliacao.id = cursor.fetchone()["id"]
 
-        avaliacao.id = cursor.lastrowid
+            conexao.commit()
+            return avaliacao
 
-        conexao.commit()
+        except Exception:
+            conexao.rollback()
+            raise
 
-        cursor.close()
-        conexao.close()
-
-        return avaliacao
+        finally:
+            conexao.close()
 
 
     def buscarAvaliacao(self, usuario_id, album_id):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT *
-            FROM avaliacoes
-            WHERE usuario_id = %s
-            AND album_id = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT *
+                    FROM avaliacoes
+                    WHERE usuario_id = %s
+                    AND album_id = %s
+                """, (usuario_id, album_id))
 
-        cursor.execute(sql, (usuario_id, album_id))
+                return cursor.fetchone()
 
-        avaliacao = cursor.fetchone()
-
-        cursor.close()
-        conexao.close()
-
-        return avaliacao
+        finally:
+            conexao.close()
 
 
     def atualizarAvaliacao(self, usuario_id, album_id, nota):
-
         conexao = conectar()
-        cursor = conexao.cursor()
 
-        sql = """
-            UPDATE avaliacoes
-            SET nota = %s
-            WHERE usuario_id = %s
-            AND album_id = %s
-        """
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    UPDATE avaliacoes
+                    SET nota = %s
+                    WHERE usuario_id = %s
+                    AND album_id = %s
+                """, (nota, usuario_id, album_id))
 
-        cursor.execute(sql, (nota, usuario_id, album_id))
+                linhas_afetadas = cursor.rowcount
 
-        conexao.commit()
+            conexao.commit()
+            return linhas_afetadas > 0
 
-        linhas_afetadas = cursor.rowcount
+        except Exception:
+            conexao.rollback()
+            raise
 
-        cursor.close()
-        conexao.close()
-
-        return linhas_afetadas > 0
+        finally:
+            conexao.close()
 
 
     def carregarAvaliacoesUsuario(self, usuario_id):
-
         conexao = conectar()
-        cursor = conexao.cursor(dictionary=True)
 
-        sql = """
-            SELECT
-                avaliacoes.id AS avaliacao_id,
-                avaliacoes.nota,
-                avaliacoes.data_criacao,
-                avaliacoes.data_atualizacao,
-                albuns.id AS album_id,
-                albuns.deezer_id,
-                albuns.titulo,
-                albuns.artista,
-                albuns.capa_url
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT
+                        avaliacoes.id AS avaliacao_id,
+                        avaliacoes.nota,
+                        avaliacoes.data_criacao,
+                        avaliacoes.data_atualizacao,
+                        albuns.id AS album_id,
+                        albuns.deezer_id,
+                        albuns.titulo,
+                        albuns.artista,
+                        albuns.capa_url
 
-            FROM avaliacoes
+                    FROM avaliacoes
 
-            JOIN albuns
-                ON avaliacoes.album_id = albuns.id
+                    JOIN albuns
+                        ON avaliacoes.album_id = albuns.id
 
-            WHERE avaliacoes.usuario_id = %s
+                    WHERE avaliacoes.usuario_id = %s
 
-            ORDER BY avaliacoes.data_atualizacao DESC
-        """
+                    ORDER BY avaliacoes.data_atualizacao DESC
+                """, (usuario_id,))
 
-        cursor.execute(sql, (usuario_id,))
+                return cursor.fetchall()
 
-        avaliacoes = cursor.fetchall()
-
-        cursor.close()
-        conexao.close()
-
-        return avaliacoes
+        finally:
+            conexao.close()

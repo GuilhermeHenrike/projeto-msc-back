@@ -1,6 +1,5 @@
 from database import conectar
 
-
 class ComentarioRepository:
 
     def salvarComentario(self, comentario):
@@ -27,9 +26,10 @@ class ComentarioRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
-            
+
 
     def carregarComentarios(self, publicacao_id):
         conexao = conectar()
@@ -54,6 +54,7 @@ class ComentarioRepository:
                 """, (publicacao_id,))
 
                 return cursor.fetchall()
+
         finally:
             conexao.close()
 
@@ -65,17 +66,21 @@ class ComentarioRepository:
             with conexao.cursor() as cursor:
                 cursor.execute("""
                     UPDATE comentarios
-                    SET texto = %s,
-                        data_atualizacao = CURRENT_TIMESTAMP
+                    SET texto = %s
                     WHERE id = %s
                     AND usuario_id = %s
-                """, (texto, comentario_id, usuario_id))
+                """, (
+                    texto,
+                    comentario_id,
+                    usuario_id
+                ))
 
             conexao.commit()
 
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
@@ -89,12 +94,16 @@ class ComentarioRepository:
                     DELETE FROM comentarios
                     WHERE id = %s
                     AND usuario_id = %s
-                """, (comentario_id, usuario_id))
+                """, (
+                    comentario_id,
+                    usuario_id
+                ))
 
             conexao.commit()
 
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
