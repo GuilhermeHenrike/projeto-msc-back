@@ -58,6 +58,9 @@ class ComunidadeService:
 
     def entrarComunidade(self, usuario_id, comunidade_id):
 
+        if self.repoComunidade.usuarioBloqueado(usuario_id, comunidade_id):
+            return "BLOQUEADO"
+
         if self.repoComunidade.usuarioParticipa(usuario_id, comunidade_id):
             return False
 
@@ -86,3 +89,38 @@ class ComunidadeService:
 
     def contarMembros(self, comunidade_id):
         return self.repoComunidade.contarMembros(comunidade_id)
+
+    ## FUNCIONALIDADE BLOQUEAR USUARIOS
+
+    def bloquearUsuario(self, comunidade_id, usuario_id, criador_id):
+        if usuario_id == criador_id:
+            return False
+
+        return self.repoComunidade.bloquearUsuario(
+        comunidade_id,
+        usuario_id,
+        criador_id
+    )
+
+
+    def desbloquearUsuario(self, comunidade_id, usuario_id):
+        return self.repoComunidade.desbloquearUsuario(
+        comunidade_id,
+        usuario_id
+    )
+
+
+    def listarUsuariosBloqueados(self, comunidade_id):
+        return self.repoComunidade.listarUsuariosBloqueados(
+        comunidade_id
+    )
+
+
+    def usuarioBloqueado(self, usuario_id, comunidade_id):
+        return self.repoComunidade.usuarioBloqueado(
+        usuario_id,
+        comunidade_id
+    )
+
+    def listarParticipantes(self, comunidade_id):
+        return self.repoComunidade.listarParticipantes(comunidade_id)

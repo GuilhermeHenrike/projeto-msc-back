@@ -163,10 +163,18 @@ def comunidadeController(app, comunidadeService):
 
         usuario_id = session["user.id"]
 
+        comunidade = comunidadeService.listarComunidade(comunidade_id)
+
+        if comunidade is None:
+            return {"erro": "Comunidade não encontrada"}, 404
+
         entrou = comunidadeService.entrarComunidade(
             usuario_id,
             comunidade_id
         )
+
+        if entrou == "BLOQUEADO":
+            return {"erro": "Você foi bloqueado pelo criador desta comunidade"}, 403
 
         if not entrou:
             return {"erro": "Você já participa desta comunidade"}, 409
@@ -232,3 +240,107 @@ def comunidadeController(app, comunidadeService):
             )
 
         return comunidades, 200
+
+# BLOQUEAR PARTICIPANTE
+
+    @app.route("/comunidade/<int:comunidade_id>/bloquear/<int:usuario_id>", methods=["POST"])
+    def bloquearParticipante(comunidade_id, usuario_id):
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        criador_id = int(session["user.id"])
+
+        comunidade = comunidadeService.listarComunidade(comunidade_id)
+
+        if comunidade is None:
+            return {"erro": "Comunidade não encontrada"}, 404
+
+        if criador_id != int(comunidade["criador_id"]):
+            return {"erro": "Somente o criador pode bloquear participantes"}, 403
+
+        if criador_id == usuario_id:
+            return {"erro": "Você não pode bloquear a si mesmo"}, 400
+
+        if comunidadeService.usuarioBloqueado(usuario_id, comunidade_id):
+            return {"erro": "Este usuário já está bloqueado"}, 409
+
+        bloqueado = comunidadeService.bloquearUsuario(
+            comunidade_id,
+            usuario_id,
+            criador_id
+    )
+
+        if not bloqueado:
+            return {"erro": "Usuário não participa desta comunidade"}, 400
+
+        return {"mensagem": "Usuário bloqueado com sucesso"}, 200
+
+
+# DESBLOQUEAR PARTICIPANTE
+
+    @app.route("/comunidade/<int:comunidade_id>/desbloquear/<int:usuario_id>", methods=["DELETE"])
+    def desbloquearParticipante(comunidade_id, usuario_id):
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        criador_id = int(session["user.id"])
+
+        comunidade = comunidadeService.listarComunidade(comunidade_id)
+
+        if comunidade is None:
+            return {"erro": "Comunidade não encontrada"}, 404
+
+        if criador_id != int(comunidade["criador_id"]):
+            return {"erro": "Somente o criador pode desbloquear participantes"}, 403
+
+        desbloqueado = comunidadeService.desbloquearUsuario(
+            comunidade_id,
+            usuario_id
+    )
+
+        if not desbloqueado:
+            return {"erro": "Usuário não está bloqueado"}, 404
+
+        return {"mensagem": "Usuário desbloqueado com sucesso"}, 200
+
+
+# LISTAR USUÁRIOS BLOQUEADOS
+
+    @app.route("/comunidade/<int:comunidade_id>/bloqueados", methods=["GET"])
+    def listarBloqueados(comunidade_id):
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        comunidade = comunidadeService.listarComunidade(comunidade_id)
+
+        if comunidade is None:
+            return {"erro": "Comunidade não encontrada"}, 404
+
+        if int(session["user.id"]) != int(comunidade["criador_id"]):
+            return {"erro": "Não autorizado"}, 403
+
+        return comunidadeService.listarUsuariosBloqueados(comunidade_id), 200
+
+    # LISTAR PARTICIPANTES DA COMUNIDADE
+
+    @app.route("/comunidade/<int:comunidade_id>/participantes", methods=["GET"])
+    def listarParticipantes(comunidade_id):
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        comunidade = comunidadeService.listarComunidade(comunidade_id)
+
+        if comunidade is None:
+            return {"erro": "Comunidade não encontrada"}, 404
+
+        if int(session["user.id"]) != int(comunidade["criador_id"]):
+            return {"erro": "Somente o criador pode visualizar os participantes"}, 403
+
+        participantes = comunidadeService.listarParticipantes(comunidade_id)
+
+        return participantes, 200
+    
