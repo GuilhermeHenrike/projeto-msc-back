@@ -1,6 +1,7 @@
 from flask import jsonify, session
 
-def curtidaController(app, curtidaService):
+
+def curtidaController(app, curtidaService, notificacaoService):
 
     @app.route("/curtir/<int:publicacao_id>", methods=["POST"])
     def curtir(publicacao_id):
@@ -15,9 +16,11 @@ def curtidaController(app, curtidaService):
             publicacao_id
         )
 
-        total_curtidas = curtidaService.contarCurtidas(
-            publicacao_id
-        )
+        # Só cria notificação quando a curtida é adicionada
+        if curtido:
+            notificacaoService.notificarInteracao( usuario_origem_id=usuario_id, publicacao_id=publicacao_id, tipo="curtida")
+
+        total_curtidas = curtidaService.contarCurtidas(publicacao_id)
 
         return jsonify({
             "curtido": curtido,

@@ -17,6 +17,7 @@ from app.repositories.albumRepository import AlbumRepository
 from app.repositories.albumSalvoRepository import AlbumSalvoRepository
 from app.repositories.avaliacaoRepository import AvaliacaoRepository
 from app.repositories.composicaoRepository import ComposicaoRepository
+from app.repositories.notificacaoRepository import NotificacaoRepository
 
 # Services
 from app.services.authService import AuthService
@@ -30,6 +31,7 @@ from app.services.albumService import AlbumService
 from app.services.avaliacaoService import AvaliacaoService
 from app.services.composicaoService import ComposicaoService
 from app.services.artistasService import ArtistasService
+from app.services.notificacaoService import NotificacaoService
 
 from flask_cors import CORS
 
@@ -45,6 +47,7 @@ from app.controllers.albumController import albumController
 from app.controllers.avaliacaoController import avaliacaoController
 from app.controllers.composicaoController import composicaoController
 from app.controllers.artistasController import artistasController
+from app.controllers.notificacaoController import notificacaoController
 
 
 def create_app():
@@ -92,7 +95,7 @@ def create_app():
     repoAlbumSalvo = AlbumSalvoRepository()
     repoAvaliacao = AvaliacaoRepository()
     repoComposicao = ComposicaoRepository()
-
+    repoNotificacao = NotificacaoRepository()
     # =========================
     # SERVICES
     # =========================
@@ -107,6 +110,7 @@ def create_app():
     avaliacaoService = AvaliacaoService(repoAvaliacao)
     perfilService = PerfilService(repoPerfil, avaliacaoService)
     composicaoService = ComposicaoService(repoComposicao)
+    notificacaoService = NotificacaoService(repoNotificacao)
 
     # =========================
     # CONTROLLERS
@@ -116,13 +120,17 @@ def create_app():
     comunidadeController(app, comunidadeService)
     perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
-    comentarioController(app, comentarioService)
-    curtidaController(app, curtidaService)
+
+    comentarioController(app, comentarioService, notificacaoService)
+    curtidaController(app, curtidaService, notificacaoService)
+    notificacaoController(app, notificacaoService)
+
     senhaController(app, senhaService)
     albumController(app, albumService)
     avaliacaoController(app, avaliacaoService)
     composicaoController(app, composicaoService)
 
+    
     # =========================
     # ARTISTAS EM ALTA
     # =========================
