@@ -84,10 +84,19 @@ class ComposicaoRepository:
         try:
             with conexao.cursor() as cursor:
                 sql = """
-                    SELECT id, titulo, estilo_musical, letra
-                    FROM composicoes
-                    WHERE publica = TRUE
-                    ORDER BY data_atualizacao DESC
+                    SELECT
+                        c.id,
+                        c.usuario_id,
+                        c.titulo,
+                        c.estilo_musical,
+                        c.letra,
+                        u.nome AS autor_nome,
+                        u.foto_url AS autor_foto_url
+                    FROM composicoes c
+                    INNER JOIN usuarios u
+                        ON c.usuario_id = u.id
+                    WHERE c.publica = TRUE
+                    ORDER BY c.data_atualizacao DESC
                 """
 
                 cursor.execute(sql)
@@ -103,9 +112,19 @@ class ComposicaoRepository:
         try:
             with conexao.cursor() as cursor:
                 sql = """
-                    SELECT id, titulo, estilo_musical, letra
-                    FROM composicoes
-                    WHERE id = %s AND publica = TRUE
+                    SELECT
+                        c.id,
+                        c.usuario_id,
+                        c.titulo,
+                        c.estilo_musical,
+                        c.letra,
+                        u.nome AS autor_nome,
+                        u.foto_url AS autor_foto_url
+                    FROM composicoes c
+                    INNER JOIN usuarios u
+                        ON c.usuario_id = u.id
+                    WHERE c.id = %s
+                    AND c.publica = TRUE
                 """
 
                 cursor.execute(sql, (composicao_id,))
