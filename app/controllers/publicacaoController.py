@@ -17,21 +17,28 @@ def publicacaoController(app, publicacaoService):
         legenda = request.form.get("legenda", "").strip()
         comunidade_id = request.form.get("comunidade")
 
-        if arquivo is None or not arquivo.filename:
+        # Verifica se existe pelo menos uma mídia ou legenda.
+        if (arquivo is None or not arquivo.filename) and not legenda:
             return jsonify({
-                "error": "Selecione uma imagem ou um vídeo."
+                "error": "Adicione uma legenda ou selecione uma imagem/vídeo."
             }), 400
 
-        tipo_mime = arquivo.mimetype or ""
+        # Identifica o tipo de mídia, caso exista arquivo.
+        tipo_midia = None
 
-        if tipo_mime.startswith("image/"):
-            tipo_midia = "imagem"
-        elif tipo_mime.startswith("video/"):
-            tipo_midia = "video"
-        else:
-            return jsonify({
-                "error": "Formato de arquivo não permitido."
-            }), 400
+        if arquivo and arquivo.filename:
+            tipo_mime = arquivo.mimetype or ""
+
+            if tipo_mime.startswith("image/"):
+                tipo_midia = "imagem"
+
+            elif tipo_mime.startswith("video/"):
+                tipo_midia = "video"
+
+            else:
+                return jsonify({
+                    "error": "Formato de arquivo não permitido."
+                }), 400
 
         if not comunidade_id:
             return jsonify({
@@ -40,8 +47,9 @@ def publicacaoController(app, publicacaoService):
 
         usuario_id = session["user.id"]
 
+        # Agora o service também pode receber arquivo=None.
         publicacao = publicacaoService.criarPublicacao(
-            arquivo,
+            arquivo if arquivo and arquivo.filename else None,
             legenda,
             usuario_id,
             comunidade_id,
@@ -142,7 +150,6 @@ def publicacaoController(app, publicacaoService):
 
         usuario_id = session.get("user.id")
 
-        # Passa o usuário para verificar suas curtidas
         publicacoes = publicacaoService.carregarPublicacao(
             usuario_id
         )
@@ -165,7 +172,6 @@ def publicacaoController(app, publicacaoService):
 
         usuario_id = session.get("user.id")
 
-        # Passa o usuário para verificar suas curtidas
         publicacoes = (
             publicacaoService.carregarPublicacoesPorComunidade(
                 comunidade_id,
