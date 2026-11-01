@@ -1,6 +1,5 @@
 from database import conectar
 
-
 class ComunidadeRepository:
 
     def salvarComunidade(self, comunidade):
@@ -38,9 +37,10 @@ class ComunidadeRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
-            
+
 
     def editarComunidade(self, comunidade, comunidade_id):
         conexao = conectar()
@@ -68,6 +68,7 @@ class ComunidadeRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
@@ -87,9 +88,12 @@ class ComunidadeRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
+
+    # BUSCAR COMUNIDADES
 
     def todasComunidades(self, usuario_id):
         conexao = conectar()
@@ -106,6 +110,7 @@ class ComunidadeRepository:
                 """, (usuario_id,))
 
                 return cursor.fetchall()
+
         finally:
             conexao.close()
 
@@ -122,6 +127,7 @@ class ComunidadeRepository:
                 """, (comunidade_id,))
 
                 return cursor.fetchone()
+
         finally:
             conexao.close()
 
@@ -140,9 +146,12 @@ class ComunidadeRepository:
                 """, (usuario_id,))
 
                 return cursor.fetchall()
+
         finally:
             conexao.close()
 
+
+    # FILTRO COMUNIDADE POR GÊNERO
 
     def comunidadesPorGenero(self, genero):
         conexao = conectar()
@@ -156,9 +165,12 @@ class ComunidadeRepository:
                 """, (genero,))
 
                 return cursor.fetchall()
+
         finally:
             conexao.close()
 
+
+    # ENTRAR E SAIR DA COMUNIDADE
 
     def entrarComunidade(self, usuario_id, comunidade_id):
         conexao = conectar()
@@ -169,19 +181,14 @@ class ComunidadeRepository:
                     INSERT INTO membros_comunidade
                     (usuario_id, comunidade_id)
                     VALUES (%s, %s)
-                    ON CONFLICT (usuario_id, comunidade_id)
-                    DO NOTHING
-                    RETURNING id
                 """, (usuario_id, comunidade_id))
 
-                entrou = cursor.fetchone() is not None
-
             conexao.commit()
-            return entrou
 
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
@@ -205,6 +212,7 @@ class ComunidadeRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
@@ -221,7 +229,10 @@ class ComunidadeRepository:
                     AND comunidade_id = %s
                 """, (usuario_id, comunidade_id))
 
-                return cursor.fetchone() is not None
+                resultado = cursor.fetchone()
+
+                return resultado is not None
+
         finally:
             conexao.close()
 
@@ -238,5 +249,23 @@ class ComunidadeRepository:
                 """, (f"%{nome}%",))
 
                 return cursor.fetchall()
+
+        finally:
+            conexao.close()
+
+
+    def contarMembros(self, comunidade_id):
+        conexao = conectar()
+
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT COUNT(DISTINCT usuario_id) AS total
+                    FROM membros_comunidade
+                    WHERE comunidade_id = %s
+                """, (comunidade_id,))
+
+                return cursor.fetchone()["total"]
+
         finally:
             conexao.close()

@@ -1,8 +1,8 @@
 from database import conectar
 
-
 class CurtidaRepository:
 
+    # Adicionar curtida
     def curtir(self, usuario_id, publicacao_id):
         conexao = conectar()
 
@@ -11,8 +11,6 @@ class CurtidaRepository:
                 cursor.execute("""
                     INSERT INTO curtidas (usuario_id, publicacao_id)
                     VALUES (%s, %s)
-                    ON CONFLICT (usuario_id, publicacao_id)
-                    DO NOTHING
                 """, (usuario_id, publicacao_id))
 
             conexao.commit()
@@ -20,10 +18,12 @@ class CurtidaRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
-            
 
+
+    # Remover curtida
     def descurtir(self, usuario_id, publicacao_id):
         conexao = conectar()
 
@@ -40,10 +40,12 @@ class CurtidaRepository:
         except Exception:
             conexao.rollback()
             raise
+
         finally:
             conexao.close()
 
 
+    # Verificar se o usuário já curtiu
     def verificarCurtida(self, usuario_id, publicacao_id):
         conexao = conectar()
 
@@ -54,13 +56,16 @@ class CurtidaRepository:
                     FROM curtidas
                     WHERE usuario_id = %s
                     AND publicacao_id = %s
+                    LIMIT 1
                 """, (usuario_id, publicacao_id))
 
                 return cursor.fetchone()
+
         finally:
             conexao.close()
 
 
+    # Contar curtidas da publicação
     def contarCurtidas(self, publicacao_id):
         conexao = conectar()
 
@@ -72,6 +77,9 @@ class CurtidaRepository:
                     WHERE publicacao_id = %s
                 """, (publicacao_id,))
 
-                return cursor.fetchone()["total"]
+                resultado = cursor.fetchone()
+
+                return resultado["total"]
+
         finally:
             conexao.close()

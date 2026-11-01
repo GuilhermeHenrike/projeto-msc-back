@@ -1,62 +1,104 @@
 import os
-import time
-from google import genai
+import base64
+
 from dotenv import load_dotenv
+from openai import OpenAI
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+api_key = os.getenv("OPENAI_API_KEY")
 
-def moderarConteudo(texto):
+client = OpenAI(
+    api_key=api_key,
+    timeout=15.0,
+    max_retries=0
+) if api_key else None
 
-    prompt = f"""
-Você é um sistema de moderação de conteúdo de uma rede social musical.
 
-Analise o texto abaixo e determine se ele contém conteúdo inadequado.
+def moderarLegenda(legenda):
+    """
+    Modera somente o texto da legenda.
+    Usada em publicações de vídeos.
+    """
 
-Considere inadequado:
+    if client is None:
+        raise RuntimeError("OPENAI_API_KEY não configurada.")
 
-- ameaças
-- incentivo à violência
-- discurso de ódio
-- assédio grave
-- conteúdo sexual explícito
-- incentivo a atividades criminosas
-- conteúdo extremamente ofensivo
+    resposta = client.moderations.create(
+        model="omni-moderation-latest",
+        input=legenda or ""
+    )
 
-Responda SOMENTE com uma destas duas palavras:
+    resultado = resposta.results[0]
 
-APROVADO
+    print(
+        "Resultado da moderação da legenda:",
+        resultado.flagged
+    )
+    print(
+        "Categorias identificadas:",
+        resultado.categories
+    )
 
-ou
+    return not resultado.flagged
 
-BLOQUEADO
 
-Texto para analisar:
+def moderarConteudo(legenda, imagem_bytes, mime_type):
+    """
+    Modera a legenda e o conteúdo visual de uma imagem.
+    """
 
-{texto}
-"""
+    if client is None:
+        raise RuntimeError("OPENAI_API_KEY não configurada.")
 
-    for tentativa in range(3):
+    tipos_validos = {
+        "image/jpeg",
+        "image/png",
+        "image/webp"
+    }
 
-        try:
+    if not imagem_bytes:
+        raise ValueError("A imagem enviada está vazia.")
 
-            resposta = client.models.generate_content(
-                model="gemini-3.6-flash",
-                contents=prompt
-            )
+    if mime_type not in tipos_validos:
+        raise ValueError("Formato de imagem não suportado.")
 
-            resultado = resposta.text.strip().upper()
+    if len(imagem_bytes) > 10 * 1024 * 1024:
+        raise ValueError("A imagem ultrapassa o limite de 10 MB.")
 
-            return resultado == "APROVADO"
+    imagem_base64 = base64.b64encode(
+        imagem_bytes
+    ).decode("utf-8")
 
-        except Exception as e:
+    imagem_url = (
+        f"data:{mime_type};base64,{imagem_base64}"
+    )
 
-            print(f"Gemini - tentativa {tentativa + 1}: {e}")
+    resposta = client.moderations.create(
+        model="omni-moderation-latest",
+        input=[
+            {
+                "type": "text",
+                "text": legenda or ""
+            },
+            {
+                "type": "image_url",
+                "image_url": {
+                    "url": imagem_url
+                }
+            }
+        ]
+    )
 
-            if tentativa < 2:
-                time.sleep(3)
-            else:
-                return None
+    resultado = resposta.results[0]
+
+    print(
+        "Resultado da moderação:",
+        resultado.flagged
+    )
+    print(
+        "Categorias identificadas:",
+        resultado.categories
+    )
+
+    return not resultado.flagged

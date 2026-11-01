@@ -1,0 +1,66 @@
+from database import conectar
+
+class SenhaRepository:
+
+    def atualizarSenha(self, email, senhaHash):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            UPDATE usuarios
+            SET senha_hash = %s
+            WHERE email = %s
+        """
+
+        cursor.execute(sql, (senhaHash, email))
+        conexao.commit()
+
+        linhasAlteradas = cursor.rowcount
+
+        cursor.close()
+        conexao.close()
+
+        return linhasAlteradas > 0
+
+
+    def atualizarSenhaPerfil(self, usuario_id, senhaHash):
+
+        conexao = conectar()
+        cursor = conexao.cursor()
+
+        sql = """
+            UPDATE usuarios
+            SET senha_hash = %s
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (senhaHash, usuario_id))
+        conexao.commit()
+
+        linhasAlteradas = cursor.rowcount
+
+        cursor.close()
+        conexao.close()
+
+        return linhasAlteradas > 0
+
+
+    def procurarId(self, usuario_id):
+
+        conexao = conectar()
+        cursor = conexao.cursor(dictionary=True)
+
+        sql = """
+            SELECT senha_hash
+            FROM usuarios
+            WHERE id = %s
+        """
+
+        cursor.execute(sql, (usuario_id,))
+        resultado = cursor.fetchone()
+
+        cursor.close()
+        conexao.close()
+
+        return resultado

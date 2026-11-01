@@ -1,8 +1,10 @@
+
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, session, redirect
 from flask_mail import Mail
 import cloudinary
+
 # Repositories
 from app.repositories.authRepository import AuthRepository
 from app.repositories.comunidadeRepository import ComunidadeRepository
@@ -10,6 +12,11 @@ from app.repositories.publicacaoRepository import PublicacaoRepository
 from app.repositories.comentariosRepository import ComentarioRepository
 from app.repositories.curtidaRepository import CurtidaRepository
 from app.repositories.perfilRepository import PerfilRepository
+from app.repositories.senhaRepository import SenhaRepository
+from app.repositories.albumRepository import AlbumRepository
+from app.repositories.albumSalvoRepository import AlbumSalvoRepository
+from app.repositories.avaliacaoRepository import AvaliacaoRepository
+from app.repositories.composicaoRepository import ComposicaoRepository
 
 # Services
 from app.services.authService import AuthService
@@ -18,6 +25,12 @@ from app.services.publicacaoService import PublicacaoService
 from app.services.comentarioService import ComentarioService
 from app.services.curtidaService import CurtidaService
 from app.services.perfilService import PerfilService
+from app.services.senhaService import SenhaService
+from app.services.albumService import AlbumService
+from app.services.avaliacaoService import AvaliacaoService
+from app.services.composicaoService import ComposicaoService
+from app.services.artistasService import ArtistasService
+
 from flask_cors import CORS
 
 # Controllers
@@ -26,7 +39,13 @@ from app.controllers.comunidadeController import comunidadeController
 from app.controllers.publicacaoController import publicacaoController
 from app.controllers.comentarioController import comentarioController
 from app.controllers.curtidaController import curtidaController
-from app.controllers.perfilProfile import perfilController
+from app.controllers.perfilController import perfilController
+from app.controllers.senhaController import senhaController
+from app.controllers.albumController import albumController
+from app.controllers.avaliacaoController import avaliacaoController
+from app.controllers.composicaoController import composicaoController
+from app.controllers.artistasController import artistasController
+
 
 def create_app():
 
@@ -64,23 +83,32 @@ def create_app():
     # REPOSITORIES
     # =========================
 
-    repoUser = AuthRepository()
+    repoAuth = AuthRepository()
     repoComunidade = ComunidadeRepository()
     repoPublicacao = PublicacaoRepository()
     repoPerfil = PerfilRepository()
     comentarioRepository = ComentarioRepository()
     curtidaRepository = CurtidaRepository()
+    repoSenha = SenhaRepository()
+    repoAlbum = AlbumRepository()
+    repoAlbumSalvo = AlbumSalvoRepository()
+    repoAvaliacao = AvaliacaoRepository()
+    repoComposicao = ComposicaoRepository()
 
     # =========================
     # SERVICES
     # =========================
 
-    authService = AuthService(repoUser, mail)
+    authService = AuthService(repoAuth)
     comunidadeService = ComunidadeService(repoComunidade)
-    perfilService = PerfilService(repoPerfil)
-    publicacaoService = PublicacaoService(repoPublicacao)
+    publicacaoService = PublicacaoService(repoPublicacao, repoComunidade)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
+    senhaService = SenhaService(repoSenha, repoAuth, mail)
+    albumService = AlbumService(repoAlbum, repoAlbumSalvo)
+    avaliacaoService = AvaliacaoService(repoAvaliacao)
+    perfilService = PerfilService(repoPerfil, avaliacaoService)
+    composicaoService = ComposicaoService(repoComposicao)
 
     # =========================
     # CONTROLLERS
@@ -92,6 +120,17 @@ def create_app():
     publicacaoController(app, publicacaoService)
     comentarioController(app, comentarioService)
     curtidaController(app, curtidaService)
+    senhaController(app, senhaService)
+    albumController(app, albumService)
+    avaliacaoController(app, avaliacaoService)
+    composicaoController(app, composicaoService)
+
+    # =========================
+    # ARTISTAS EM ALTA
+    # =========================
+
+    artistasService = ArtistasService()
+    artistasController(app, artistasService)
 
     @app.route("/")
     def login():
@@ -115,14 +154,18 @@ def create_app():
         publicacoes = publicacaoService.carregarPublicacao()
 
         for publicacao in publicacoes:
-            publicacao["comentarios"] = comentarioService.carregarComentarios(publicacao["id"])
+            publicacao["comentarios"] = comentarioService.carregarComentarios(
+                publicacao["id"]
+            )
 
-            publicacao["curtidas"] = curtidaService.contarCurtidas(publicacao["id"])
+            publicacao["curtidas"] = curtidaService.contarCurtidas(
+                publicacao["id"]
+            )
 
         return render_template(
             "Home.html",
             comunidades=comunidades,
-            publicacoes = publicacoes
+            publicacoes=publicacoes
         )
 
     @app.route("/enviar-codigo")
@@ -157,8 +200,8 @@ def create_app():
 
         usuario_id = session["user.id"]
 
-        comunidadesDisponiveis = comunidadeService.listarComunidadesNaoParticipa(
-            usuario_id
+        comunidadesDisponiveis = (
+            comunidadeService.listarComunidadesNaoParticipa(usuario_id)
         )
 
         return render_template(

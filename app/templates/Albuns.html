@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Minha biblioteca musical</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            background-color: #121212;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #53CA97;
+        }
+
+        h2 {
+            margin-top: 40px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333333;
+        }
+
+        form {
+            margin: 10px 0;
+        }
+
+        input,
+        button {
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+        }
+
+        input {
+            background-color: #282828;
+            color: white;
+            border: 1px solid #444444;
+        }
+
+        button {
+            background-color: #53CA97;
+            color: #121212;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #3ABB83;
+        }
+
+        .botao-remover {
+            background-color: #e05252;
+            color: white;
+        }
+
+        .botao-remover:hover {
+            background-color: #c63e3e;
+        }
+
+        .pesquisa {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pesquisa input {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .grade {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #1e1e1e;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #333333;
+        }
+
+        .card img {
+            width: 100%;
+            max-width: 220px;
+            aspect-ratio: 1;
+            object-fit: cover;
+            border-radius: 8px;
+            display: block;
+            margin: 0 auto 15px;
+        }
+
+        .card h3 {
+            margin-bottom: 5px;
+        }
+
+        .artista {
+            color: #bbbbbb;
+            margin-top: 0;
+        }
+
+        .card button {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .card input {
+            width: 100%;
+            margin-top: 8px;
+        }
+
+        .mensagem {
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 6px;
+        }
+
+        .sucesso {
+            background-color: #214b38;
+            color: #8ef0bd;
+        }
+
+        .erro {
+            background-color: #542727;
+            color: #ffaaaa;
+        }
+
+        .vazio {
+            color: #aaaaaa;
+        }
+
+        .nota-atual {
+            color: #53CA97;
+            font-weight: bold;
+        }
+
+        a {
+            color: #53CA97;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>🎵 Minha biblioteca musical</h1>
+
+        <p>Pesquise álbuns, organize sua biblioteca e avalie suas músicas favoritas.</p>
+
+        <a href="/home">Voltar para a página inicial</a>
+    </header>
+
+
+    <!-- MENSAGENS DO FLASK -->
+
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+            {% for categoria, mensagem in mensagens %}
+                <div class="mensagem {{ categoria }}">
+                    {{ mensagem }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+
+    <!-- PESQUISA DE ÁLBUNS -->
+
+    <section>
+        <h2>🔎 Pesquisar álbuns</h2>
+
+        <form action="/api/albuns/buscar" method="GET" class="pesquisa">
+            <input
+                type="text"
+                name="query"
+                placeholder="Digite o nome do álbum ou artista"
+                value="{{ query|default('') }}"
+                required
+            >
+
+            <button type="submit">Pesquisar</button>
+        </form>
+
+        {% if albunsEncontrados is defined %}
+
+            <div class="grade">
+
+                {% for album in albunsEncontrados %}
+
+                    <div class="card">
+
+                        {% if album.capa_url %}
+                            <img
+                                src="{{ album.capa_url }}"
+                                alt="Capa do álbum {{ album.titulo }}"
+                            >
+                        {% endif %}
+
+                        <h3>{{ album.titulo }}</h3>
+
+                        <p class="artista">{{ album.artista }}</p>
+
+                        <form action="/api/albuns/salvar" method="POST">
+
+                            <input
+                                type="hidden"
+                                name="deezer_id"
+                                value="{{ album.deezer_id }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="titulo"
+                                value="{{ album.titulo }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="artista"
+                                value="{{ album.artista }}"
+                            >
+
+                            <input
+                                type="hidden"
+                                name="capa_url"
+                                value="{{ album.capa_url or '' }}"
+                            >
+
+                            <button type="submit">
+                                💿 Salvar na biblioteca
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                {% else %}
+
+                    <p class="vazio">Nenhum álbum encontrado.</p>
+
+                {% endfor %}
+
+            </div>
+
+        {% endif %}
+    </section>
+
+
+    <!-- BIBLIOTECA DO USUÁRIO -->
+
+    <section>
+        <h2>📚 Meus álbuns salvos</h2>
+
+        {% if albunsSalvos %}
+
+            <div class="grade">
+
+                {% for album in albunsSalvos %}
+
+                    <div class="card">
+
+                        {% if album.capa_url %}
+                            <img
+                                src="{{ album.capa_url }}"
+                                alt="Capa do álbum {{ album.titulo }}"
+                            >
+                        {% endif %}
+
+                        <h3>{{ album.titulo }}</h3>
+
+                        <p class="artista">{{ album.artista }}</p>
+
+                        <form
+                            action="/api/albuns/salvos/{{ album.id }}"
+                            method="POST"
+                            onsubmit="return confirm('Remover este álbum da biblioteca?')"
+                        >
+                            <button type="submit" class="botao-remover">
+                                🗑️ Remover da biblioteca
+                            </button>
+                        </form>
+
+
+                        <!-- VERIFICA SE O USUÁRIO JÁ AVALIOU ESTE ÁLBUM -->
+
+                        {% set ns = namespace(avaliacao=none) %}
+
+                        {% for avaliacao in avaliacoes %}
+
+                            {% if avaliacao.album_id == album.id %}
+                                {% set ns.avaliacao = avaliacao %}
+                            {% endif %}
+
+                        {% endfor %}
+
+
+                        {% if ns.avaliacao %}
+
+                            <p>
+                                Sua nota atual:
+                                <span class="nota-atual">
+                                    {{ ns.avaliacao.nota }}/10
+                                </span>
+                            </p>
+
+                            <form
+                                action="/api/avaliacoes/editar/{{ album.id }}"
+                                method="POST"
+                            >
+                                <label>Alterar nota:</label>
+
+                                <input
+                                    type="number"
+                                    name="nota"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    value="{{ ns.avaliacao.nota }}"
+                                    required
+                                >
+
+                                <button type="submit">
+                                    ✏️ Atualizar avaliação
+                                </button>
+                            </form>
+
+                        {% else %}
+
+                            <form action="/api/avaliacoes/salvar" method="POST">
+
+                                <input
+                                    type="hidden"
+                                    name="album_id"
+                                    value="{{ album.id }}"
+                                >
+
+                                <label>Dar uma nota de 0 a 10:</label>
+
+                                <input
+                                    type="number"
+                                    name="nota"
+                                    min="0"
+                                    max="10"
+                                    step="0.1"
+                                    placeholder="Ex.: 8.5"
+                                    required
+                                >
+
+                                <button type="submit">
+                                    ⭐ Avaliar álbum
+                                </button>
+
+                            </form>
+
+                        {% endif %}
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p class="vazio">Sua biblioteca ainda está vazia.</p>
+
+        {% endif %}
+    </section>
+
+
+    <!-- AVALIAÇÕES DO USUÁRIO -->
+
+    <section>
+        <h2>⭐ Minhas avaliações</h2>
+
+        {% if avaliacoes %}
+
+            <div class="grade">
+
+                {% for avaliacao in avaliacoes %}
+
+                    <div class="card">
+
+                        {% if avaliacao.capa_url %}
+                            <img
+                                src="{{ avaliacao.capa_url }}"
+                                alt="Capa do álbum {{ avaliacao.titulo }}"
+                            >
+                        {% endif %}
+
+                        <h3>{{ avaliacao.titulo }}</h3>
+
+                        <p class="artista">{{ avaliacao.artista }}</p>
+
+                        <p>
+                            Sua nota:
+                            <span class="nota-atual">
+                                {{ avaliacao.nota }}/10
+                            </span>
+                        </p>
+
+                        <form
+                            action="/api/avaliacoes/editar/{{ avaliacao.album_id }}"
+                            method="POST"
+                        >
+                            <label>Nova nota:</label>
+
+                            <input
+                                type="number"
+                                name="nota"
+                                min="0"
+                                max="10"
+                                step="0.1"
+                                value="{{ avaliacao.nota }}"
+                                required
+                            >
+
+                            <button type="submit">
+                                ✏️ Atualizar nota
+                            </button>
+                        </form>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <p class="vazio">Você ainda não avaliou nenhum álbum.</p>
+
+        {% endif %}
+    </section>
+
+</body>
+</html>
