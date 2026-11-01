@@ -2,6 +2,7 @@ from database import conectar
 
 class PublicacaoRepository:
 
+    
     def salvarPublicacao(self, publicacao):
         conexao = conectar()
 
@@ -18,7 +19,6 @@ class PublicacaoRepository:
                         status_moderacao
                     )
                     VALUES (%s, %s, %s, %s, %s, %s)
-                    RETURNING id
                 """, (
                     publicacao.usuario_id,
                     publicacao.comunidade_id,
@@ -28,18 +28,20 @@ class PublicacaoRepository:
                     publicacao.status_moderacao
                 ))
 
-                publicacao.id = cursor.fetchone()["id"]
+                # Recupera o ID gerado pelo MySQL.
+                publicacao.id = cursor.lastrowid
 
             conexao.commit()
             return publicacao
 
         except Exception as e:
             conexao.rollback()
-            print("Erro ao salvar publicação:", e)
+            print("Erro ao salvar publicação:", repr(e))
             return "ERRO"
 
         finally:
             conexao.close()
+
 
 
     # Feed Descobrir
