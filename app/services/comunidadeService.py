@@ -1,126 +1,122 @@
+
 from app.models.comunidade import Comunidade
-from mysql.connector.errors import IntegrityError
+
 
 class ComunidadeService:
 
     def __init__(self, repoComunidade):
         self.repoComunidade = repoComunidade
 
+    # CRIAR COMUNIDADE
 
     def criarComunidade(self, nome, genero, criador_id, descricao, imagem_url):
         genero = genero.strip().lower()
 
-        novaComunidade = Comunidade(nome, genero, criador_id, descricao, imagem_url)
+        novaComunidade = Comunidade(
+            nome, genero, criador_id, descricao, imagem_url
+        )
+
         return self.repoComunidade.salvarComunidade(novaComunidade)
 
+    # ATUALIZAR COMUNIDADE
 
     def atualizarComunidade(self, nome, genero, descricao, imagem_url, comunidade_id):
         genero = genero.strip().lower()
 
-        comunidadeAtualizada = Comunidade(nome, genero=genero, descricao=descricao, imagem_url=imagem_url, id=comunidade_id)
-        return self.repoComunidade.editarComunidade(comunidadeAtualizada, comunidade_id)
+        comunidadeAtualizada = Comunidade(
+            nome,
+            genero=genero,
+            descricao=descricao,
+            imagem_url=imagem_url,
+            id=comunidade_id
+        )
 
+        return self.repoComunidade.editarComunidade(
+            comunidadeAtualizada, comunidade_id
+        )
+
+    # APAGAR COMUNIDADE
 
     def apagarComunidade(self, comunidade_id):
-
         return self.repoComunidade.apagarComunidade(comunidade_id)
 
-
-    ## PROCURAR COMUNIDADES:
-
+    # PROCURAR COMUNIDADES
 
     def listarComunidadesNaoParticipa(self, usuario_id):
-
         return self.repoComunidade.todasComunidades(usuario_id)
 
-
     def listarComunidade(self, comunidade_id):
-
         return self.repoComunidade.buscarComunidade(comunidade_id)
 
-
     def listarTodasComunidadesDoUsuario(self, usuario_id):
-
         return self.repoComunidade.todasComunidadesPorUsuario(usuario_id)
 
-
-    ## FILTRO
-
+    # FILTRO POR GÊNERO
 
     def filtroComunidadesPorGenero(self, genero):
         genero = genero.strip().lower()
-        
+
         return self.repoComunidade.comunidadesPorGenero(genero)
 
-
-    ## ENTRAR E SAIR
-
+    # ENTRAR E SAIR DA COMUNIDADE
 
     def entrarComunidade(self, usuario_id, comunidade_id):
-
-        if self.repoComunidade.usuarioBloqueado(usuario_id, comunidade_id):
-            return "BLOQUEADO"
-
-        if self.repoComunidade.usuarioParticipa(usuario_id, comunidade_id):
-            return False
-
-        try:
-            self.repoComunidade.entrarComunidade(usuario_id, comunidade_id)
-            return True
-
-        except IntegrityError:
-            return False
+        return self.repoComunidade.entrarComunidade(
+            usuario_id, comunidade_id
+        )
 
     def sairComunidade(self, usuario_id, comunidade_id):
-
-        return self.repoComunidade.sairComunidade(usuario_id, comunidade_id)
-
+        return self.repoComunidade.sairComunidade(
+            usuario_id, comunidade_id
+        )
 
     def usuarioParticipa(self, usuario_id, comunidade_id):
+        return self.repoComunidade.usuarioParticipa(
+            usuario_id, comunidade_id
+        )
 
-        return self.repoComunidade.usuarioParticipa(usuario_id, comunidade_id)
-
-
-    ## BUSCAR COMUNIDADES PELO NOME
+    # BUSCAR COMUNIDADES PELO NOME
 
     def buscarComunidades(self, nome):
-
         return self.repoComunidade.buscarComunidadesPorNome(nome)
 
     def contarMembros(self, comunidade_id):
         return self.repoComunidade.contarMembros(comunidade_id)
 
-    ## FUNCIONALIDADE BLOQUEAR USUARIOS
+    # BLOQUEAR USUÁRIOS
 
     def bloquearUsuario(self, comunidade_id, usuario_id, criador_id):
         if usuario_id == criador_id:
             return False
 
         return self.repoComunidade.bloquearUsuario(
-        comunidade_id,
-        usuario_id,
-        criador_id
-    )
+            comunidade_id,
+            usuario_id,
+            criador_id
+        )
 
+    # DESBLOQUEAR USUÁRIOS
 
     def desbloquearUsuario(self, comunidade_id, usuario_id):
         return self.repoComunidade.desbloquearUsuario(
-        comunidade_id,
-        usuario_id
-    )
+            comunidade_id,
+            usuario_id
+        )
 
+    # LISTAR USUÁRIOS BLOQUEADOS
 
     def listarUsuariosBloqueados(self, comunidade_id):
         return self.repoComunidade.listarUsuariosBloqueados(
-        comunidade_id
-    )
-
+            comunidade_id
+        )
 
     def usuarioBloqueado(self, usuario_id, comunidade_id):
         return self.repoComunidade.usuarioBloqueado(
-        usuario_id,
-        comunidade_id
-    )
+            usuario_id,
+            comunidade_id
+        )
+
+    # LISTAR PARTICIPANTES
 
     def listarParticipantes(self, comunidade_id):
         return self.repoComunidade.listarParticipantes(comunidade_id)

@@ -1,6 +1,5 @@
 
 from flask import request, session
-from mysql.connector.errors import IntegrityError
 import cloudinary.uploader
 
 
@@ -26,15 +25,11 @@ def comunidadeController(app, comunidadeService):
 
         usuario_id = session["user.id"]
 
-        try:
-            comunidadeService.criarComunidade(
-                nome, genero, usuario_id, descricao, imagem_url
-            )
+        comunidadeService.criarComunidade(
+            nome, genero, usuario_id, descricao, imagem_url
+        )
 
-            return {"mensagem": "Comunidade criada com sucesso"}, 201
-
-        except IntegrityError:
-            return {"erro": "Já existe uma comunidade com esse nome"}, 409
+        return {"mensagem": "Comunidade criada com sucesso"}, 201
 
     # ATUALIZAR COMUNIDADE
 
@@ -116,15 +111,13 @@ def comunidadeController(app, comunidadeService):
             return {"erro": "Comunidade não encontrada"}, 404
 
         comunidade["participando"] = comunidadeService.usuarioParticipa(
-            usuario_id,
-            comunidade_id
+            usuario_id, comunidade_id
         )
 
         comunidade["eh_criador"] = (
             int(usuario_id) == int(comunidade["criador_id"])
         )
 
-        # Quantidade de membros
         comunidade["total_membros"] = comunidadeService.contarMembros(
             comunidade_id
         )
@@ -163,23 +156,32 @@ def comunidadeController(app, comunidadeService):
 
         usuario_id = session["user.id"]
 
-        comunidade = comunidadeService.listarComunidade(comunidade_id)
-
-        if comunidade is None:
-            return {"erro": "Comunidade não encontrada"}, 404
-
-        entrou = comunidadeService.entrarComunidade(
+        resultado = comunidadeService.entrarComunidade(
             usuario_id,
             comunidade_id
         )
 
-        if entrou == "BLOQUEADO":
-            return {"erro": "Você foi bloqueado pelo criador desta comunidade"}, 403
+        if resultado == "COMUNIDADE_NAO_ENCONTRADA":
+            return {"erro": "Comunidade não encontrada"}, 404
 
-        if not entrou:
-            return {"erro": "Você já participa desta comunidade"}, 409
+        if resultado == "USUARIO_BLOQUEADO":
+            return {
+                "erro": "Você foi bloqueado pelo criador desta comunidade"
+            }, 403
 
-        return {"mensagem": "Entrou na comunidade com sucesso"}, 200
+        if resultado == "JA_PARTICIPA":
+            return {
+                "erro": "Você já participa desta comunidade"
+            }, 409
+
+        if resultado != "SUCESSO":
+            return {
+                "erro": "Não foi possível entrar na comunidade"
+            }, 500
+
+        return {
+            "mensagem": "Entrou na comunidade com sucesso"
+        }, 200
 
     # SAIR DA COMUNIDADE
 
@@ -222,7 +224,7 @@ def comunidadeController(app, comunidadeService):
 
         return comunidades
 
-# BUSCAR COMUNIDADES DE UM USUÁRIO PELO ID
+    # BUSCAR COMUNIDADES DE UM USUÁRIO PELO ID
 
     @app.route("/comunidadesUsuario/<int:usuario_id>", methods=["GET"])
     def comunidadesUsuario(usuario_id):
@@ -241,9 +243,12 @@ def comunidadeController(app, comunidadeService):
 
         return comunidades, 200
 
-# BLOQUEAR PARTICIPANTE
+    # BLOQUEAR PARTICIPANTE
 
-    @app.route("/comunidade/<int:comunidade_id>/bloquear/<int:usuario_id>", methods=["POST"])
+    @app.route(
+        "/comunidade/<int:comunidade_id>/bloquear/<int:usuario_id>",
+        methods=["POST"]
+    )
     def bloquearParticipante(comunidade_id, usuario_id):
 
         if "user.id" not in session:
@@ -257,7 +262,9 @@ def comunidadeController(app, comunidadeService):
             return {"erro": "Comunidade não encontrada"}, 404
 
         if criador_id != int(comunidade["criador_id"]):
-            return {"erro": "Somente o criador pode bloquear participantes"}, 403
+            return {
+                "erro": "Somente o criador pode bloquear participantes"
+            }, 403
 
         if criador_id == usuario_id:
             return {"erro": "Você não pode bloquear a si mesmo"}, 400
@@ -269,17 +276,21 @@ def comunidadeController(app, comunidadeService):
             comunidade_id,
             usuario_id,
             criador_id
-    )
+        )
 
         if not bloqueado:
-            return {"erro": "Usuário não participa desta comunidade"}, 400
+            return {
+                "erro": "Usuário não participa desta comunidade"
+            }, 400
 
         return {"mensagem": "Usuário bloqueado com sucesso"}, 200
 
+    # DESBLOQUEAR PARTICIPANTE
 
-# DESBLOQUEAR PARTICIPANTE
-
-    @app.route("/comunidade/<int:comunidade_id>/desbloquear/<int:usuario_id>", methods=["DELETE"])
+    @app.route(
+        "/comunidade/<int:comunidade_id>/desbloquear/<int:usuario_id>",
+        methods=["DELETE"]
+    )
     def desbloquearParticipante(comunidade_id, usuario_id):
 
         if "user.id" not in session:
@@ -293,22 +304,26 @@ def comunidadeController(app, comunidadeService):
             return {"erro": "Comunidade não encontrada"}, 404
 
         if criador_id != int(comunidade["criador_id"]):
-            return {"erro": "Somente o criador pode desbloquear participantes"}, 403
+            return {
+                "erro": "Somente o criador pode desbloquear participantes"
+            }, 403
 
         desbloqueado = comunidadeService.desbloquearUsuario(
             comunidade_id,
             usuario_id
-    )
+        )
 
         if not desbloqueado:
             return {"erro": "Usuário não está bloqueado"}, 404
 
         return {"mensagem": "Usuário desbloqueado com sucesso"}, 200
 
+    # LISTAR USUÁRIOS BLOQUEADOS
 
-# LISTAR USUÁRIOS BLOQUEADOS
-
-    @app.route("/comunidade/<int:comunidade_id>/bloqueados", methods=["GET"])
+    @app.route(
+        "/comunidade/<int:comunidade_id>/bloqueados",
+        methods=["GET"]
+    )
     def listarBloqueados(comunidade_id):
 
         if "user.id" not in session:
@@ -322,11 +337,16 @@ def comunidadeController(app, comunidadeService):
         if int(session["user.id"]) != int(comunidade["criador_id"]):
             return {"erro": "Não autorizado"}, 403
 
-        return comunidadeService.listarUsuariosBloqueados(comunidade_id), 200
+        return comunidadeService.listarUsuariosBloqueados(
+            comunidade_id
+        ), 200
 
     # LISTAR PARTICIPANTES DA COMUNIDADE
 
-    @app.route("/comunidade/<int:comunidade_id>/participantes", methods=["GET"])
+    @app.route(
+        "/comunidade/<int:comunidade_id>/participantes",
+        methods=["GET"]
+    )
     def listarParticipantes(comunidade_id):
 
         if "user.id" not in session:
@@ -338,9 +358,12 @@ def comunidadeController(app, comunidadeService):
             return {"erro": "Comunidade não encontrada"}, 404
 
         if int(session["user.id"]) != int(comunidade["criador_id"]):
-            return {"erro": "Somente o criador pode visualizar os participantes"}, 403
+            return {
+                "erro": "Somente o criador pode visualizar os participantes"
+            }, 403
 
-        participantes = comunidadeService.listarParticipantes(comunidade_id)
+        participantes = comunidadeService.listarParticipantes(
+            comunidade_id
+        )
 
         return participantes, 200
-    

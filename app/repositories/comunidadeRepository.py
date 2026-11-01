@@ -1,4 +1,6 @@
+
 from database import conectar
+
 
 class ComunidadeRepository:
 
@@ -41,7 +43,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     def editarComunidade(self, comunidade, comunidade_id):
         conexao = conectar()
 
@@ -72,7 +73,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     def apagarComunidade(self, comunidade_id):
         conexao = conectar()
 
@@ -92,7 +92,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     # BUSCAR COMUNIDADES
 
     def todasComunidades(self, usuario_id):
@@ -107,7 +106,6 @@ class ComunidadeRepository:
                         ON c.id = mc.comunidade_id
                         AND mc.usuario_id = %s
                     WHERE mc.id IS NULL
-
                     AND NOT EXISTS (
                         SELECT 1
                         FROM comunidade_bloqueios cb
@@ -120,7 +118,6 @@ class ComunidadeRepository:
 
         finally:
             conexao.close()
-
 
     def buscarComunidade(self, comunidade_id):
         conexao = conectar()
@@ -137,7 +134,6 @@ class ComunidadeRepository:
 
         finally:
             conexao.close()
-
 
     def todasComunidadesPorUsuario(self, usuario_id):
         conexao = conectar()
@@ -157,7 +153,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     # FILTRO COMUNIDADE POR GÊNERO
 
     def comunidadesPorGenero(self, genero):
@@ -176,7 +171,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     # ENTRAR E SAIR DA COMUNIDADE
 
     def entrarComunidade(self, usuario_id, comunidade_id):
@@ -184,6 +178,36 @@ class ComunidadeRepository:
 
         try:
             with conexao.cursor() as cursor:
+
+                cursor.execute("""
+                    SELECT id
+                    FROM comunidades
+                    WHERE id = %s
+                """, (comunidade_id,))
+
+                if cursor.fetchone() is None:
+                    return "COMUNIDADE_NAO_ENCONTRADA"
+
+                cursor.execute("""
+                    SELECT id
+                    FROM comunidade_bloqueios
+                    WHERE usuario_id = %s
+                    AND comunidade_id = %s
+                """, (usuario_id, comunidade_id))
+
+                if cursor.fetchone() is not None:
+                    return "USUARIO_BLOQUEADO"
+
+                cursor.execute("""
+                    SELECT id
+                    FROM membros_comunidade
+                    WHERE usuario_id = %s
+                    AND comunidade_id = %s
+                """, (usuario_id, comunidade_id))
+
+                if cursor.fetchone() is not None:
+                    return "JA_PARTICIPA"
+
                 cursor.execute("""
                     INSERT INTO membros_comunidade
                     (usuario_id, comunidade_id)
@@ -191,6 +215,7 @@ class ComunidadeRepository:
                 """, (usuario_id, comunidade_id))
 
             conexao.commit()
+            return "SUCESSO"
 
         except Exception:
             conexao.rollback()
@@ -198,7 +223,6 @@ class ComunidadeRepository:
 
         finally:
             conexao.close()
-
 
     def sairComunidade(self, usuario_id, comunidade_id):
         conexao = conectar()
@@ -223,7 +247,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     def usuarioParticipa(self, usuario_id, comunidade_id):
         conexao = conectar()
 
@@ -236,13 +259,10 @@ class ComunidadeRepository:
                     AND comunidade_id = %s
                 """, (usuario_id, comunidade_id))
 
-                resultado = cursor.fetchone()
-
-                return resultado is not None
+                return cursor.fetchone() is not None
 
         finally:
             conexao.close()
-
 
     def buscarComunidadesPorNome(self, nome):
         conexao = conectar()
@@ -260,7 +280,6 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-
     def contarMembros(self, comunidade_id):
         conexao = conectar()
 
@@ -277,7 +296,7 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-    # Verificar se o usuário está bloqueado
+    # VERIFICAR SE O USUÁRIO ESTÁ BLOQUEADO
 
     def usuarioBloqueado(self, usuario_id, comunidade_id):
         conexao = conectar()
@@ -291,14 +310,12 @@ class ComunidadeRepository:
                     AND comunidade_id = %s
                 """, (usuario_id, comunidade_id))
 
-
-            
-            return cursor.fetchone() is not None
+                return cursor.fetchone() is not None
 
         finally:
             conexao.close()
 
-    # Bloquear participante
+    # BLOQUEAR PARTICIPANTE
 
     def bloquearUsuario(self, comunidade_id, usuario_id, criador_id):
         conexao = conectar()
@@ -307,26 +324,53 @@ class ComunidadeRepository:
             with conexao.cursor() as cursor:
 
                 cursor.execute("""
+                    SELECT criador_id
+                    FROM comunidades
+                    WHERE id = %s
+                """, (comunidade_id,))
+
+                comunidade = cursor.fetchone()
+
+                if comunidade is None:
+                    return False
+
+                if comunidade["criador_id"] != criador_id:
+                    return False
+
+                if usuario_id == criador_id:
+                    return False
+
+                cursor.execute("""
                     SELECT id
                     FROM membros_comunidade
                     WHERE usuario_id = %s
                     AND comunidade_id = %s
-            """, (usuario_id, comunidade_id))
+                """, (usuario_id, comunidade_id))
 
-            if cursor.fetchone() is None:
-                return False
+                if cursor.fetchone() is None:
+                    return False
 
-            cursor.execute("""
-                INSERT INTO comunidade_bloqueios
-                (comunidade_id, usuario_id, bloqueado_por)
-                VALUES (%s, %s, %s)
-            """, (comunidade_id, usuario_id, criador_id))
+                cursor.execute("""
+                    SELECT id
+                    FROM comunidade_bloqueios
+                    WHERE usuario_id = %s
+                    AND comunidade_id = %s
+                """, (usuario_id, comunidade_id))
 
-            cursor.execute("""
-                DELETE FROM membros_comunidade
-                WHERE usuario_id = %s
-                AND comunidade_id = %s
-            """, (usuario_id, comunidade_id))
+                if cursor.fetchone() is not None:
+                    return False
+
+                cursor.execute("""
+                    INSERT INTO comunidade_bloqueios
+                    (comunidade_id, usuario_id, bloqueado_por)
+                    VALUES (%s, %s, %s)
+                """, (comunidade_id, usuario_id, criador_id))
+
+                cursor.execute("""
+                    DELETE FROM membros_comunidade
+                    WHERE usuario_id = %s
+                    AND comunidade_id = %s
+                """, (usuario_id, comunidade_id))
 
             conexao.commit()
             return True
@@ -338,7 +382,7 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-    # Desbloquear participante
+    # DESBLOQUEAR PARTICIPANTE
 
     def desbloquearUsuario(self, comunidade_id, usuario_id):
         conexao = conectar()
@@ -346,12 +390,12 @@ class ComunidadeRepository:
         try:
             with conexao.cursor() as cursor:
                 cursor.execute("""
-                DELETE FROM comunidade_bloqueios
-                WHERE comunidade_id = %s
-                AND usuario_id = %s
-            """, (comunidade_id, usuario_id))
+                    DELETE FROM comunidade_bloqueios
+                    WHERE comunidade_id = %s
+                    AND usuario_id = %s
+                """, (comunidade_id, usuario_id))
 
-            removido = cursor.rowcount > 0
+                removido = cursor.rowcount > 0
 
             conexao.commit()
             return removido
@@ -363,7 +407,7 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-    # Listar usuários bloqueados
+    # LISTAR USUÁRIOS BLOQUEADOS
 
     def listarUsuariosBloqueados(self, comunidade_id):
         conexao = conectar()
@@ -388,7 +432,8 @@ class ComunidadeRepository:
         finally:
             conexao.close()
 
-    # Listar participantes atuais
+    # LISTAR PARTICIPANTES ATUAIS
+
     def listarParticipantes(self, comunidade_id):
         conexao = conectar()
 
@@ -409,7 +454,7 @@ class ComunidadeRepository:
                         WHERE id = %s
                     )
                     ORDER BY u.nome
-                """, (comunidade_id,))
+                """, (comunidade_id, comunidade_id))
 
                 return cursor.fetchall()
 
