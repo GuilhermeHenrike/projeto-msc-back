@@ -53,7 +53,10 @@ def create_app():
 
     CORS(
         app,
-        origins=["http://localhost:5173"],
+        origins=[
+            "http://localhost:5173",
+            "https://yrplace-git-deploy-wanderxrs.vercel.app"
+        ],
         supports_credentials=True
     )
 
@@ -69,6 +72,8 @@ def create_app():
     mail = Mail()
 
     app.config["SECRET_KEY"] = os.getenv("SECRET_KEY")
+    app.config["SESSION_COOKIE_SAMESITE"] = "None"
+    app.config["SESSION_COOKIE_SECURE"] = True
 
     app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER", "smtp.gmail.com")
     app.config["MAIL_PORT"] = int(os.getenv("MAIL_PORT") or "587")
