@@ -1,4 +1,3 @@
-
 from database import conectar
 
 
@@ -10,7 +9,7 @@ class NotificacaoRepository:
         conexao = conectar()
 
         try:
-            with conexao.cursor(dictionary=True) as cursor:
+            with conexao.cursor() as cursor:
                 cursor.execute("""
                     INSERT INTO notificacoes
                     (usuario_destino_id, usuario_origem_id, tipo, publicacao_id)
@@ -36,7 +35,7 @@ class NotificacaoRepository:
         conexao = conectar()
 
         try:
-            with conexao.cursor(dictionary=True) as cursor:
+            with conexao.cursor() as cursor:
                 cursor.execute("""
                     SELECT usuario_id
                     FROM publicacoes
@@ -55,7 +54,7 @@ class NotificacaoRepository:
         conexao = conectar()
 
         try:
-            with conexao.cursor(dictionary=True) as cursor:
+            with conexao.cursor() as cursor:
                 cursor.execute("""
                     SELECT
                         n.id,

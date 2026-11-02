@@ -1,4 +1,8 @@
+
 from flask import jsonify, session
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def curtidaController(app, curtidaService, notificacaoService):
@@ -11,18 +15,40 @@ def curtidaController(app, curtidaService, notificacaoService):
 
         usuario_id = session["user.id"]
 
-        curtido = curtidaService.curtir(
-            usuario_id,
-            publicacao_id
-        )
+        try:
+            curtido = curtidaService.curtir(
+                usuario_id,
+                publicacao_id
+            )
 
-        # Só cria notificação quando a curtida é adicionada
-        if curtido:
-            notificacaoService.notificarInteracao( usuario_origem_id=usuario_id, publicacao_id=publicacao_id, tipo="curtida")
+            # Criar notificação somente quando a curtida é adicionada
+            if curtido:
+                try:
+                    notificacaoService.notificarInteracao(
+                        usuario_origem_id=usuario_id,
+                        publicacao_id=publicacao_id,
+                        tipo="curtida"
+                    )
 
-        total_curtidas = curtidaService.contarCurtidas(publicacao_id)
+                except Exception:
+                    logger.exception(
+                        "Erro ao criar notificação de curtida"
+                    )
 
-        return jsonify({
-            "curtido": curtido,
-            "total_curtidas": total_curtidas
-        }), 200
+            total_curtidas = curtidaService.contarCurtidas(
+                publicacao_id
+            )
+
+            return jsonify({
+                "curtido": curtido,
+                "total_curtidas": total_curtidas
+            }), 200
+
+        except Exception:
+            logger.exception(
+                "Erro ao curtir ou descurtir publicação"
+            )
+
+            return jsonify({
+                "erro": "Erro ao curtir a publicação"
+            }), 500
