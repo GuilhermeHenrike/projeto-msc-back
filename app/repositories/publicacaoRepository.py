@@ -19,6 +19,7 @@ class PublicacaoRepository:
                         status_moderacao
                     )
                     VALUES (%s, %s, %s, %s, %s, %s)
+                    RETURNING id
                 """, (
                     publicacao.usuario_id,
                     publicacao.comunidade_id,
@@ -28,20 +29,18 @@ class PublicacaoRepository:
                     publicacao.status_moderacao
                 ))
 
-                # Recupera o ID gerado pelo MySQL.
-                publicacao.id = cursor.lastrowid
+                publicacao.id = cursor.fetchone()["id"]
 
             conexao.commit()
             return publicacao
 
         except Exception as e:
             conexao.rollback()
-            print("Erro ao salvar publicação:", repr(e))
+            print("Erro ao salvar publicação:", e)
             return "ERRO"
 
         finally:
             conexao.close()
-
 
 
     # Feed Descobrir
