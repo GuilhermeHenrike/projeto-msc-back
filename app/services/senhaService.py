@@ -118,15 +118,18 @@ class SenhaService:
         return False
 
     def mudarSenha(self, nova_senha, email):
+        if not nova_senha or not email:
+            return False
+
+        if len(nova_senha) < 8:
+            return "SENHA_CURTA"
+
         if not session.get("codigo_verificado"):
             return False
 
         emailRecuperacao = session.get("email_recuperacao")
 
         if email != emailRecuperacao:
-            return False
-
-        if not nova_senha or not email:
             return False
 
         senhaHash = generate_password_hash(nova_senha)
@@ -145,9 +148,13 @@ class SenhaService:
 
         return False
 
+
     def mudarSenhaPerfil(self, nova_senha, usuario_id):
         if not nova_senha or not usuario_id:
             return False
+
+        if len(nova_senha) < 8:
+            return "SENHA_CURTA"
 
         senhaHash = generate_password_hash(nova_senha)
 

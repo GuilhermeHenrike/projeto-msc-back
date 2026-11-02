@@ -22,6 +22,7 @@ def senhaController(app, senhaService):
 
         return "Não foi possível enviar o código. Verifique o e-mail ou tente novamente.", 400
 
+
     @app.route("/confirmar-codigo", methods=["POST"])
     def confirmarCodigo():
         dados = request.get_json()
@@ -41,6 +42,7 @@ def senhaController(app, senhaService):
 
         return "Código não compatível", 400
 
+
     @app.route("/mudar-senha", methods=["POST"])
     def mudarSenha():
         dados = request.get_json()
@@ -56,10 +58,14 @@ def senhaController(app, senhaService):
 
         sucesso = senhaService.mudarSenha(nova_senha, email)
 
+        if sucesso == "SENHA_CURTA":
+            return "A senha deve ter pelo menos 8 caracteres.", 400
+
         if sucesso:
             return "Senha atualizada com sucesso", 200
 
         return "Não foi possível atualizar sua senha", 400
+
 
     @app.route("/mudar-senha-perfil", methods=["POST"])
     def mudarSenhaPerfil():
@@ -74,15 +80,16 @@ def senhaController(app, senhaService):
         if not nova_senha:
             return "Digite uma nova senha", 400
 
-        sucesso = senhaService.mudarSenhaPerfil(
-            nova_senha,
-            usuario_id
-        )
+        sucesso = senhaService.mudarSenhaPerfil(nova_senha, usuario_id)
+
+        if sucesso == "SENHA_CURTA":
+            return "A senha deve ter pelo menos 8 caracteres.", 400
 
         if sucesso:
             return "Senha atualizada com sucesso", 200
 
         return "Não foi possível atualizar sua senha", 400
+
 
     @app.route("/confirmar-senha", methods=["POST"])
     def confirmarSenha():
@@ -100,10 +107,7 @@ def senhaController(app, senhaService):
         if not senha:
             return "Informe a senha", 400
 
-        resultado = senhaService.confirmarSenhaAtual(
-            usuario_id,
-            senha
-        )
+        resultado = senhaService.confirmarSenhaAtual(usuario_id, senha)
 
         if resultado:
             return "Senha confirmada", 200
