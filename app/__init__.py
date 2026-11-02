@@ -88,7 +88,7 @@ def create_app():
     mail.init_app(app)
 
     # =========================
-    # REPOSITORIES
+    # REPOSITORIES.
     # =========================
 
     repoAuth = AuthRepository()
