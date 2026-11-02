@@ -128,8 +128,6 @@ def create_app():
     comunidadeController(app, comunidadeService)
     perfilController(app, perfilService)
     publicacaoController(app, publicacaoService)
-    comentarioController(app, comentarioService)
-    curtidaController(app, curtidaService)
     senhaController(app, senhaService)
     albumController(app, albumService)
     avaliacaoController(app, avaliacaoService)
