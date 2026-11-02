@@ -113,7 +113,7 @@ def create_app():
     publicacaoService = PublicacaoService(repoPublicacao, repoComunidade)
     comentarioService = ComentarioService(comentarioRepository)
     curtidaService = CurtidaService(curtidaRepository)
-    senhaService = SenhaService(repoSenha, repoAuth, mail)
+    senhaService = SenhaService(repoSenha, repoAuth)
     albumService = AlbumService(repoAlbum, repoAlbumSalvo)
     avaliacaoService = AvaliacaoService(repoAvaliacao)
     perfilService = PerfilService(repoPerfil, avaliacaoService)

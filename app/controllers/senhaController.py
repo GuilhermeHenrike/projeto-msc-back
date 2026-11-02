@@ -5,24 +5,21 @@ def senhaController(app, senhaService):
     @app.route("/enviar-codigo", methods=["POST"])
     def enviarCodigo():
         dados = request.get_json()
+
+        if not dados:
+            return "Dados não informados", 400
+
         email = dados.get("email")
 
-        senhaService.enviarCodigo(email)
+        if not email:
+            return "Informe o e-mail", 400
 
-        return "codigo enviado!"
+        sucesso = senhaService.enviarCodigo(email)
 
+        if sucesso:
+            return "Código enviado!", 200
 
-    @app.route("/conf-codigo", methods=["POST"])
-    def confirmarCodigo():
-        dados = request.get_json()
-        codigo_digitado = dados.get("codigo")
-
-        cod_validado = senhaService.confirmarCodigo(codigo_digitado)
-
-        if cod_validado == True:
-            return "Código confirmado"
-
-        return "Código não compatível."
+        return "Não foi possível enviar o código. Verifique o e-mail ou tente novamente.", 400
 
 
     @app.route("/mudar-senha", methods=["POST"])
