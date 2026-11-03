@@ -144,7 +144,7 @@ def comentarioController(app, comentarioService, notificacaoService):
             }), 500
 
     # =========================
-    # APAGAR COMENTÁRIO
+    # APAGAR COMENTÁRIO.
     # =========================
 
     @app.route("/comentario/<int:id>", methods=["DELETE"])
