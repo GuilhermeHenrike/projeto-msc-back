@@ -80,6 +80,12 @@ class ComunidadeService:
     def buscarComunidades(self, nome):
         return self.repoComunidade.buscarComunidadesPorNome(nome)
 
+    # BUSCAR COMUNIDADES QUE O USUARIO É DONO
+    
+    def listarComunidadesDoCriador(self, usuario_id):
+        return self.repoComunidade.listarComunidadesUserDono(usuario_id)
+
+
     def contarMembros(self, comunidade_id):
         return self.repoComunidade.contarMembros(comunidade_id)
 

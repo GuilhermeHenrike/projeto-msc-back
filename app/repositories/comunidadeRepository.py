@@ -460,3 +460,19 @@ class ComunidadeRepository:
 
         finally:
             conexao.close()
+
+
+    def listarComunidadesUserDono(self, usuario_id):
+        conexao = conectar()
+
+        try:
+            with conexao.cursor() as cursor:
+                cursor.execute("""
+                    SELECT *
+                    FROM comunidades
+                    WHERE criador_id = %s;
+                """, (usuario_id,))
+
+                return cursor.fetchall()
+        finally:
+            conexao.close()

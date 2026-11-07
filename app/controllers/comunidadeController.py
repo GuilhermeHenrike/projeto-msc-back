@@ -31,6 +31,7 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Comunidade criada com sucesso"}, 201
 
+
     # ATUALIZAR COMUNIDADE
 
     @app.route("/comunidade/<int:id>", methods=["PUT"])
@@ -63,6 +64,7 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Comunidade atualizada com sucesso"}, 200
 
+
     # APAGAR COMUNIDADE
 
     @app.route("/comunidade/<int:id>", methods=["DELETE"])
@@ -83,6 +85,7 @@ def comunidadeController(app, comunidadeService):
 
         return "", 204
 
+
     # COMUNIDADES DISPONÍVEIS
 
     @app.route("/buscarComunidadesDisponiveis", methods=["GET"])
@@ -94,6 +97,22 @@ def comunidadeController(app, comunidadeService):
         usuario_id = session["user.id"]
 
         return comunidadeService.listarComunidadesNaoParticipa(usuario_id)
+
+
+    # COMUNIDADES QUE O USUARIO É DONO
+    
+    @app.route("/minhasComunidades", methods=["GET"])
+    def minhasComunidades():
+
+        if "user.id" not in session:
+            return {"erro": "Não autenticado"}, 401
+
+        usuario_id = session["user.id"]
+
+        comunidades = comunidadeService.listarComunidadesDoCriador(usuario_id)
+
+        return comunidades
+
 
     # BUSCAR UMA COMUNIDADE PELO ID
 
@@ -124,6 +143,7 @@ def comunidadeController(app, comunidadeService):
 
         return comunidade
 
+
     # COMUNIDADES DO USUÁRIO
 
     @app.route("/buscarComunidadeUsuario", methods=["GET"])
@@ -136,6 +156,7 @@ def comunidadeController(app, comunidadeService):
 
         return comunidadeService.listarTodasComunidadesDoUsuario(usuario_id)
 
+
     # FILTRAR POR GÊNERO
 
     @app.route("/filtroGeneroComunidade/<string:genero>", methods=["GET"])
@@ -145,6 +166,7 @@ def comunidadeController(app, comunidadeService):
             return {"erro": "Não autenticado"}, 401
 
         return comunidadeService.filtroComunidadesPorGenero(genero)
+
 
     # ENTRAR NA COMUNIDADE
 
@@ -183,6 +205,7 @@ def comunidadeController(app, comunidadeService):
             "mensagem": "Entrou na comunidade com sucesso"
         }, 200
 
+
     # SAIR DA COMUNIDADE
 
     @app.route("/sairComunidade/<int:comunidade_id>", methods=["POST"])
@@ -205,6 +228,7 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Saiu da comunidade com sucesso"}, 200
 
+
     # PESQUISAR COMUNIDADES PELO NOME
 
     @app.route("/buscarComunidades", methods=["GET"])
@@ -224,6 +248,7 @@ def comunidadeController(app, comunidadeService):
 
         return comunidades
 
+
     # BUSCAR COMUNIDADES DE UM USUÁRIO PELO ID
 
     @app.route("/comunidadesUsuario/<int:usuario_id>", methods=["GET"])
@@ -242,6 +267,7 @@ def comunidadeController(app, comunidadeService):
             )
 
         return comunidades, 200
+
 
     # BLOQUEAR PARTICIPANTE
 
@@ -285,6 +311,7 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Usuário bloqueado com sucesso"}, 200
 
+
     # DESBLOQUEAR PARTICIPANTE
 
     @app.route(
@@ -318,6 +345,7 @@ def comunidadeController(app, comunidadeService):
 
         return {"mensagem": "Usuário desbloqueado com sucesso"}, 200
 
+
     # LISTAR USUÁRIOS BLOQUEADOS
 
     @app.route(
@@ -340,6 +368,7 @@ def comunidadeController(app, comunidadeService):
         return comunidadeService.listarUsuariosBloqueados(
             comunidade_id
         ), 200
+
 
     # LISTAR PARTICIPANTES DA COMUNIDADE
 
