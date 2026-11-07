@@ -1,3 +1,4 @@
+
 import os
 import base64
 
@@ -35,6 +36,7 @@ def moderarLegenda(legenda):
         "Resultado da moderação da legenda:",
         resultado.flagged
     )
+
     print(
         "Categorias identificadas:",
         resultado.categories
@@ -96,9 +98,74 @@ def moderarConteudo(legenda, imagem_bytes, mime_type):
         "Resultado da moderação:",
         resultado.flagged
     )
+
     print(
         "Categorias identificadas:",
         resultado.categories
     )
 
     return not resultado.flagged
+
+
+def moderarComposicao(titulo, estilo, letra):
+    """
+    Moderação específica para composições musicais.
+
+    Permite:
+    - Palavrões e linguagem vulgar.
+    - Conteúdo sexual adulto.
+    - Violência em contexto artístico.
+    - Referências a drogas e criminalidade.
+    - Letras com temas controversos.
+
+    Bloqueia conteúdo sexual envolvendo menores.
+    """
+
+    if client is None:
+        raise RuntimeError("OPENAI_API_KEY não configurada.")
+
+    texto = f"""
+    Título: {titulo}
+
+    Estilo musical: {estilo}
+
+    Letra:
+    {letra}
+    """
+
+    resposta = client.moderations.create(
+        model="omni-moderation-latest",
+        input=texto
+    )
+
+    resultado = resposta.results[0]
+    categorias = resultado.categories
+
+    if isinstance(categorias, dict):
+        sexual_menores = (
+            categorias.get("sexual/minors", False)
+            or categorias.get("sexual_minors", False)
+        )
+    else:
+        sexual_menores = getattr(
+            categorias,
+            "sexual_minors",
+            False
+        )
+
+    print(
+        "Resultado da moderação da composição:",
+        resultado.flagged
+    )
+
+    print(
+        "Categorias identificadas:",
+        categorias
+    )
+
+    print(
+        "Conteúdo sexual envolvendo menores:",
+        sexual_menores
+    )
+
+    return not sexual_menores

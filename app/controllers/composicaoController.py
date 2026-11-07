@@ -1,3 +1,4 @@
+
 from flask import request, session, jsonify
 
 
@@ -29,7 +30,19 @@ def composicaoController(app, composicaoService):
             }), 201
 
         except ValueError as erro:
-            return jsonify({"erro": str(erro)}), 400
+            return jsonify({
+                "erro": str(erro)
+            }), 400
+
+        except RuntimeError as erro:
+            app.logger.error(
+                "Erro na moderação da composição: %s",
+                erro
+            )
+
+            return jsonify({
+                "erro": str(erro)
+            }), 503
 
         except Exception:
             app.logger.exception("Erro ao criar composição")
@@ -118,7 +131,19 @@ def composicaoController(app, composicaoService):
             }), 200
 
         except ValueError as erro:
-            return jsonify({"erro": str(erro)}), 400
+            return jsonify({
+                "erro": str(erro)
+            }), 400
+
+        except RuntimeError as erro:
+            app.logger.error(
+                "Erro na moderação da composição: %s",
+                erro
+            )
+
+            return jsonify({
+                "erro": str(erro)
+            }), 503
 
         except Exception:
             app.logger.exception("Erro ao atualizar composição")
@@ -154,11 +179,11 @@ def composicaoController(app, composicaoService):
                 "erro": "Não foi possível excluir a composição."
             }), 500
 
-            
     @app.route("/composicoes/publicas", methods=["GET"])
     def listarComposicoesPublicas():
         try:
             composicoes = composicaoService.listarPublicas()
+
             return jsonify(composicoes), 200
 
         except Exception:
@@ -186,6 +211,3 @@ def composicaoController(app, composicaoService):
             return jsonify({
                 "erro": "Não foi possível carregar a letra."
             }), 500
-
-
-            

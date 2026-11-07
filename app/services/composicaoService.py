@@ -1,5 +1,6 @@
 
 from app.models.composicao import Composicao
+from app.services.moderacaoService import moderarComposicao
 
 
 class ComposicaoService:
@@ -7,20 +8,42 @@ class ComposicaoService:
     def __init__(self, repoComposicao):
         self.repoComposicao = repoComposicao
 
+    def _validar_moderacao(self, titulo, estilo, letra):
+        try:
+            aprovado = moderarComposicao(
+                titulo,
+                estilo,
+                letra
+            )
+
+        except Exception as erro:
+            raise RuntimeError(
+                "Não foi possível analisar a composição. Tente novamente."
+            ) from erro
+
+        if not aprovado:
+            raise ValueError(
+                "Sua composição contém conteúdo não permitido pela plataforma."
+            )
+
     def criar(self, usuario_id, dados):
-        titulo = dados.get("titulo", "").strip()
+        titulo = dados.get("titulo", "")
         estilo = dados.get("estilo_musical", "Outro")
-        letra = dados.get("letra", "").strip()
+        letra = dados.get("letra", "")
         publica = dados.get("publica", False)
 
-        if not isinstance(titulo, str) or not titulo:
+        if not isinstance(titulo, str) or not titulo.strip():
             raise ValueError("Informe o título da música.")
+
+        titulo = titulo.strip()
 
         if len(titulo) > 150:
             raise ValueError("O título deve ter até 150 caracteres.")
 
-        if not isinstance(letra, str) or not letra:
+        if not isinstance(letra, str) or not letra.strip():
             raise ValueError("Informe a letra da música.")
+
+        letra = letra.strip()
 
         if len(letra) > 100000:
             raise ValueError("A letra ultrapassou o limite permitido.")
@@ -35,6 +58,12 @@ class ComposicaoService:
 
         if not isinstance(publica, bool):
             raise ValueError("Informe uma visibilidade válida.")
+
+        self._validar_moderacao(
+            titulo,
+            estilo,
+            letra
+        )
 
         composicao = Composicao(
             usuario_id=usuario_id,
@@ -70,11 +99,15 @@ class ComposicaoService:
         if not isinstance(titulo, str) or not titulo.strip():
             raise ValueError("Informe o título da música.")
 
-        if len(titulo.strip()) > 150:
+        titulo = titulo.strip()
+
+        if len(titulo) > 150:
             raise ValueError("O título deve ter até 150 caracteres.")
 
         if not isinstance(letra, str) or not letra.strip():
             raise ValueError("Informe a letra da música.")
+
+        letra = letra.strip()
 
         if len(letra) > 100000:
             raise ValueError("A letra ultrapassou o limite permitido.")
@@ -95,12 +128,18 @@ class ComposicaoService:
         if not existente:
             return None
 
+        self._validar_moderacao(
+            titulo,
+            estilo,
+            letra
+        )
+
         self.repoComposicao.atualizar(
             composicao_id,
             usuario_id,
-            titulo.strip(),
+            titulo,
             estilo,
-            letra.strip(),
+            letra,
             publica
         )
 
