@@ -10,22 +10,38 @@ class PerfilService:
         self.avaliacaoService = avaliacaoService
 
 
-    def atualizarPerfil(self, nome, usuario_id, foto_perfil=None, foto_url_background=None
-    ):
-        imagem_url = None
+    def atualizarPerfil( self, nome, usuario_id, foto_perfil=None, foto_url_background=None):
+        # Busca os dados atuais do usuário.
+        usuarioAtual = self.repoPerfil.buscarUsuario(usuario_id)
 
+        if not usuarioAtual:
+            raise Exception("Usuário não encontrado.")
+
+        # Mantém as imagens atuais caso não sejam alteradas.
+        imagem_url = usuarioAtual.foto_url
+        capa_url = usuarioAtual.foto_url_background
+
+        # Atualiza a foto de perfil somente se uma nova foi enviada.
         if foto_perfil:
-            resultado = cloudinary.uploader.upload(foto_perfil, folder="yrplace/perfis")
+            resultado = cloudinary.uploader.upload(
+                foto_perfil,
+                folder="yrplace/perfis"
+            )
+
             imagem_url = resultado["secure_url"]
 
+        # Atualiza a capa somente se uma nova foi enviada.
         if foto_url_background:
-            resultado = cloudinary.uploader.upload(foto_url_background, folder="yrplace/capas")
-            foto_url_background = resultado["secure_url"]
+            resultado = cloudinary.uploader.upload(
+                foto_url_background,
+                folder="yrplace/capas"
+            )
 
-        usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url, foto_url_background=foto_url_background)
+            capa_url = resultado["secure_url"]
+
+        usuarioAtualizado = Usuario( nome, None, None, id=usuario_id, foto_url=imagem_url, foto_url_background=capa_url)
 
         return self.repoPerfil.editarPerfil(usuarioAtualizado)
-
 
 
     def buscarPerfilComDados(self, usuario_id):
@@ -38,14 +54,18 @@ class PerfilService:
         publicacoes = self.repoPerfil.buscarPublicacoesUsuario(usuario_id)
         avaliacoes = self.avaliacaoService.carregarAvaliacoesUsuario(usuario_id)
 
-        return {"usuario": usuario, "publicacoes": publicacoes, "avaliacoes": avaliacoes}
-    
+        return {
+            "usuario": usuario,
+            "publicacoes": publicacoes,
+            "avaliacoes": avaliacoes
+        }
+
 
     def buscarPerfil(self, usuario_id):
         usuario = self.repoPerfil.buscarUsuario(usuario_id)
         return usuario
 
-    
+
     def buscarUsuariosPorNome(self, nome, usuario_id):
 
         nome = nome.strip()
