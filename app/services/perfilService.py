@@ -10,9 +10,15 @@ class PerfilService:
         self.avaliacaoService = avaliacaoService
 
 
-    def atualizarPerfil(self, nome, usuario_id, foto_perfil=None, foto_url_background=None
-    ):
-        imagem_url = None
+    def atualizarPerfil(self, nome, usuario_id, foto_perfil=None, foto_url_background=None):
+
+        usuarioAtual = self.repoPerfil.buscarUsuario(usuario_id)
+
+        if not usuarioAtual:
+            raise Exception("Usuário não encontrado.")
+
+        imagem_url = usuarioAtual["foto_url"]
+        capa_url = usuarioAtual["foto_url_background"]
 
         if foto_perfil:
             resultado = cloudinary.uploader.upload(foto_perfil, folder="yrplace/perfis")
@@ -20,9 +26,9 @@ class PerfilService:
 
         if foto_url_background:
             resultado = cloudinary.uploader.upload(foto_url_background, folder="yrplace/capas")
-            foto_url_background = resultado["secure_url"]
+            capa_url = resultado["secure_url"]
 
-        usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url, foto_url_background=foto_url_background)
+        usuarioAtualizado = Usuario(nome, None, None, id=usuario_id, foto_url=imagem_url, foto_url_background=capa_url)
 
         return self.repoPerfil.editarPerfil(usuarioAtualizado)
 
