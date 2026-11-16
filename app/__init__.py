@@ -1,9 +1,9 @@
-
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, session, redirect
+from flask import Flask, session
 from flask_mail import Mail
 import cloudinary
+from flask_cors import CORS
 
 # Repositories
 from app.repositories.authRepository import AuthRepository
@@ -32,8 +32,6 @@ from app.services.avaliacaoService import AvaliacaoService
 from app.services.composicaoService import ComposicaoService
 from app.services.artistasService import ArtistasService
 from app.services.notificacaoService import NotificacaoService
-
-from flask_cors import CORS
 
 # Controllers
 from app.controllers.authController import authController
@@ -88,7 +86,7 @@ def create_app():
     mail.init_app(app)
 
     # =========================
-    # REPOSITORIES.
+    # REPOSITORIES
     # =========================
 
     repoAuth = AuthRepository()
@@ -142,82 +140,5 @@ def create_app():
 
     artistasService = ArtistasService()
     artistasController(app, artistasService)
-
-    @app.route("/")
-    def login():
-        return render_template("Login.html")
-
-    @app.route("/registro")
-    def registroPage():
-        return render_template("Registro.html")
-
-    @app.route("/home")
-    def homePage():
-
-        if "user.id" not in session:
-            return redirect("/")
-
-        usuario_id = session["user.id"]
-
-        comunidades = comunidadeService.listarTodasComunidadesDoUsuario(
-            usuario_id
-        )
-        publicacoes = publicacaoService.carregarPublicacao()
-
-        for publicacao in publicacoes:
-            publicacao["comentarios"] = comentarioService.carregarComentarios(
-                publicacao["id"]
-            )
-
-            publicacao["curtidas"] = curtidaService.contarCurtidas(
-                publicacao["id"]
-            )
-
-        return render_template(
-            "Home.html",
-            comunidades=comunidades,
-            publicacoes=publicacoes
-        )
-
-    @app.route("/enviar-codigo")
-    def envCod():
-        return render_template("env_cod.html")
-
-    @app.route("/confirmar-codigo")
-    def confCodPage():
-        return render_template("conf-cod.html")
-
-    @app.route("/validar-cod")
-    def validarCodePage():
-        return render_template("validar-cod.html")
-
-    @app.route("/mudar-senha")
-    def mudarSenhaPage():
-        return render_template("mudar-senha.html")
-
-    @app.route("/criar-publicao")
-    def criarPublicacaoPage():
-
-        if "user.id" not in session:
-            return redirect("/")
-
-        return render_template("publicacao.html")
-
-    @app.route("/entrarSairComunidade")
-    def entrarSair():
-
-        if "user.id" not in session:
-            return redirect("/")
-
-        usuario_id = session["user.id"]
-
-        comunidadesDisponiveis = (
-            comunidadeService.listarComunidadesNaoParticipa(usuario_id)
-        )
-
-        return render_template(
-            "entrarSairComunidade.html",
-            comunidades=comunidadesDisponiveis
-        )
 
     return app
